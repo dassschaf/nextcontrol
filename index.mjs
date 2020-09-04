@@ -8,9 +8,10 @@ import gbxremote from 'gbxremote';
 import mongodb from 'mongodb';
 
 // import own libraries
+import * as CallbackParams from './lib/callbackparams.mjs';
 import { ClientWrapper } from './lib/clientwrapper.mjs';
 import { DatabaseWrapper } from './lib/dbwrapper.mjs';
-import { buildPluginList } from './lib/plugins.mjs';
+import { getPluginList } from './plugins.mjs';
 import { log } from './lib/utilities.mjs';
 import { Settings } from './Settings.mjs';
 
@@ -24,9 +25,9 @@ let serverPromise = new Promise((resolve, reject) => {
     client.on('connect', async () => {
         // wait for API-Version, Authentication and Callback enabling to succeed, otherwise reject the promise
         if (!(await client.query('SetApiVersion', ['2019-03-02']))) reject('api');
-        if (!(await client.query('Authenticate', [Settings.trackmania.login, Settings.trackmania.password]))) reject('auth')
-        if (!(await client.query('EnableCallbacks', [true]))) reject('callback')
-    
+        if (!(await client.query('Authenticate', [Settings.trackmania.login, Settings.trackmania.password]))) reject('auth');
+        if (!(await client.query('EnableCallbacks', [true]))) reject('callback');
+
         // and "return" the functioning client object
         resolve(client);
     });
@@ -45,8 +46,16 @@ log('su', 'Connected to MongoDB Server');
 _client.chatSendServerMessage('Connected to database ...');
 
 // read plugins
+let plugins = getPluginList({ client: _client, database: _database });
 
 // startup done, lets start waiting for the server:
 log('i', 'Startup completed, starting to listen');
 
-client.on('callback')
+client.on('callback', (method, params) => {
+    switch (method) {
+        case 'ManiaPlanet.PlayerConnect':
+            let p = CallbackParams.PlayerConnect(params);
+            plugins.forEach(plugin => { plugin.onPlayerConnect(p) });
+            break;
+    }
+})

@@ -3,6 +3,9 @@
  * Trackmania 2&2020 dedicated server controller
  */
 
+import { logger } from './lib/utilities.mjs';
+logger('su', 'Starting NextControl...');
+
 // import npm packages
 import gbxremote from 'gbxremote';
 import mongodb from 'mongodb';
@@ -11,13 +14,13 @@ import mongodb from 'mongodb';
 import * as CallbackParams from './lib/callbackparams.mjs';
 import { ClientWrapper } from './lib/clientwrapper.mjs';
 import { DatabaseWrapper } from './lib/dbwrapper.mjs';
-import { logger } from './lib/utilities.mjs';
+
 import { Settings } from './settings.mjs';
 import { Sentences } from './lib/sentences.mjs';
 
-// starting up NextControl
-logger('su', 'Starting NextControl...');
+logger('su', 'Packages imported');
 
+// starting up NextControl
 // create Trackmania XMLRPC client
 let client = gbxremote.createClient(5555);
 let serverPromise = new Promise((resolve, reject) => {

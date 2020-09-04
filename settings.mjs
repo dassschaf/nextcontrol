@@ -10,7 +10,11 @@ const Settings = {
         uri: "mongodb://localhost/nextcontrol?poolSize=20&w=majority"
     },
 
-    disabledPlugins: []
+    disabledPlugins: [],
+
+    admins: [
+        'your login here'
+    ]
 
 }
 

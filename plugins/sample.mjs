@@ -19,9 +19,31 @@ export class SamplePlugin {
 
     /**
      * Function run, when a player joins the server
-     * @param params Callback parameters
      */
     onPlayerConnect(params) {
+        
+        // params.login         == player's login
+        // params.isSpectator   == whether player joins as spectator or not
 
-    }   
+    }  
+
+    /**
+     * Function run, when a player leaves the server
+     */
+    onPlayerDisconnect(params) {
+
+        // params.login     == player's login
+        // params.reason    == disconnection reason
+
+    }
+
+    /**
+     * Function run, when a chat message is sent
+     */
+    onChat(params) {
+
+        // params.login == sender's login
+        // params.text == message content
+        // params.isCommand == whether the message is a command or not
+    }
 }

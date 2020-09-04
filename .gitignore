@@ -1,3 +1,6 @@
+# files that should not go public:
+settings-withsecrets.mjs
+
 # Logs
 logs
 *.log

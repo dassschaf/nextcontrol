@@ -10,11 +10,10 @@ logger('su', 'Starting NextControl...');
 import gbxremote from 'gbxremote';
 import mongodb from 'mongodb';
 
-// import own libraries
+// import own stuff
 import * as CallbackParams from './lib/callbackparams.mjs';
 import { ClientWrapper } from './lib/clientwrapper.mjs';
 import { DatabaseWrapper } from './lib/dbwrapper.mjs';
-
 import { Settings } from './settings.mjs';
 import { Sentences } from './lib/sentences.mjs';
 

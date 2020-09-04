@@ -1,0 +1,19 @@
+{
+  "name": "nextcontrol",
+  "version": "0.0.0",
+  "description": "Trackmania (2020) dedicated server control script",
+  "main": "index.mjs",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "trackmania"
+  ],
+  "author": "dassschaf",
+  "license": "ISC",
+  "dependencies": {
+    "chalk": "^4.1.0",
+    "gbxremote": "^0.2.1",
+    "mongodb": "^3.6.1"
+  }
+}

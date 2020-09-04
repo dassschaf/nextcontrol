@@ -14,26 +14,29 @@ export class Join {
 
         this.client = conns.client;
         this.database = conns.database;
-
-        this.players = {};
     }
 
     async onPlayerConnect(params) {
         
-        let playerInfo = await this.client.getPlayerInfo(params.login);
-        
-        //logger(JSON.stringify(playerInfo));
+        let serverPlayerInfo = await this.client.getPlayerInfo(params.login),
+            playerInfo = await this.database.getPlayerInfo(params.login);
 
-        this.players[params.login] = playerInfo;
+        if (serverPlayerInfo.login != playerInfo.login)
+            playerInfo = serverPlayerInfo;           
+        
+        this.database.updatePlayerInfo(playerInfo);
 
         logger('r', stripFormatting(playerInfo.name) + ' has joined the server');
-        this.client.chatSendServerMessage(Sentences.playerConnect, [playerInfo.name]);
+        this.client.chatSendServerMessage(format(Sentences.playerConnect, [playerInfo.name]));
     }
 
     async onPlayerDisconnect(params) {
-        let playerInfo = this.players[params.login];
+        let playerInfo = await this.database.getPlayerInfo(params.login);
+
+        if (playerInfo.login == undefined)
+            playerInfo = {name: 'unknown', login: 'unknown'};
 
         logger('r', stripFormatting(playerInfo.name) + ' has left the server');
-        this.client.chatSendServerMessage(Sentences.playerDisconnect, [playerInfo.name]);
+        this.client.chatSendServerMessage(format(Sentences.playerDisconnect, [playerInfo.name]));
     }
 }

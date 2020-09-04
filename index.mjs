@@ -12,7 +12,7 @@ import * as CallbackParams from './lib/callbackparams.mjs';
 import { ClientWrapper } from './lib/clientwrapper.mjs';
 import { DatabaseWrapper } from './lib/dbwrapper.mjs';
 import { logger } from './lib/utilities.mjs';
-import { Settings } from './settings-withsecrets.mjs';
+import { Settings } from './settings.mjs';
 import { Sentences } from './lib/sentences.mjs';
 
 // starting up NextControl
@@ -41,7 +41,7 @@ _client.chatSendServerMessage('Starting NextControl ...');
 // create MongoDB client
 let database = new mongodb.MongoClient(Settings.database.uri, { useNewUrlParser: true, useUnifiedTopology: true });
 await database.connect();
-let _database = new DatabaseWrapper(database);
+let _database = new DatabaseWrapper(await database.db(Settings.database.database));
 logger('su', 'Connected to MongoDB Server');
 _client.chatSendServerMessage('Connected to database ...');
 
@@ -77,6 +77,43 @@ client.on('callback', async (method, params) => {
             if (p.text == '/shutdown' && Settings.admins.includes(p.login)) { await _client.chatSendServerMessage(Sentences.shuttingDown); logger('w', 'Shutting down after admin invoked "/shutdown" command'); process.exit(0); }
 
             plugins.forEach(plugin => { if (typeof plugin.onChat != "undefined") plugin.onChat(p) });
+            break;
+
+        case 'ManiaPlanet.BeginMap':
+
+        case 'ManiaPlanet.BeginMatch':
+
+        case 'ManiaPlanet.BillUpdated':
+
+        case 'ManiaPlanet.EndMap':
+
+        case 'ManiaPlanet.MapListModified':
+
+        case 'ManiaPlanet.ModeScriptCallback':
+
+        case 'ManiaPlanet.ModeScriptCallbackArray':
+
+        case 'ManiaPlanet.PlayerAlliesChanged':
+
+        case 'ManiaPlanet.PlayerInfoChanged':
+
+        case 'ManiaPlanet.PlayerManilinkPageAnswer':
+
+        case 'ManiaPlanet.ServerStart':
+
+        case 'ManiaPlanet.ServerStop':
+
+        case 'ManiaPlanet.StatusChanged':
+
+        case 'ManiaPlanet.TunnelDataRecieved':
+
+        case 'ManiaPlanet.VoteUpdated':
+
+        case 'TrackMania.PlayerCheckpoint':
+
+        case 'TrackMania.PlayerFinish':
+
+        case 'PlayerIncoherence':
             break;
     }
 })

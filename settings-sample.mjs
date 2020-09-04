@@ -14,7 +14,7 @@ const Settings = {
     disabledPlugins: [],
 
     admins: [
-        'login'
+        'your login here'
     ]
 
 }

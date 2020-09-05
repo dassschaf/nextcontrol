@@ -33,7 +33,7 @@ export class Join {
     async onPlayerDisconnect(params) {
         let playerInfo = await this.database.getPlayerInfo(params.login);
 
-        if (playerInfo.login == undefined)
+        if (playerInfo.login == undefined) // if player is for some reason unknown to database:
             playerInfo = {name: 'unknown', login: 'unknown'};
 
         logger('r', stripFormatting(playerInfo.name) + ' has left the server');

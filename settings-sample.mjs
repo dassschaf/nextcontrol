@@ -5,7 +5,9 @@ const Settings = {
         login: 'SuperAdmin',    // login for SuperAdmin rights
         password: 'SuperAdmin', // password 
 
-        game: 'TM2020'          // game: TM2 or TM2020
+        game: 'TM2020',         // game: TM2 or TM2020
+
+        server_login: 'blah'    // the server's login at the masterserver
     },
 
     database: {

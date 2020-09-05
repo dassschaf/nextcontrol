@@ -16,10 +16,14 @@ export function logger(status : string, text : string) : void
 export function logger(text : string) : void
 
 /**
- * 
- * @param sentence 
- * @param fillings 
+ * Formatting aid for the sentence bank
+ * @param sentence Sentence from the sentence bank containing placeholders
+ * @param fillings Array of strings to replace the placeholders (%1% => fillings[0], %2% => fillings[1], ...)
  */
 export function format(sentence : string, fillings : Array<string>) : string
 
+/**
+ * Removes all $-formatting from a string
+ * @param string clean text string
+ */
 export function stripFormatting(string : string) : string

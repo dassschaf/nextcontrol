@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "description": "Trackmania (2020) dedicated server control script",
   "main": "index.mjs",
+  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

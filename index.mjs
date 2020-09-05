@@ -43,6 +43,7 @@ _client.chatSendServerMessage('Starting NextControl ...');
 // create MongoDB client
 let database = new mongodb.MongoClient(Settings.database.uri, { useNewUrlParser: true, useUnifiedTopology: true });
 await database.connect();
+
 let _database = new DatabaseWrapper(await database.db(Settings.database.database));
 logger('su', 'Connected to MongoDB Server');
 _client.chatSendServerMessage('Connected to database ...');

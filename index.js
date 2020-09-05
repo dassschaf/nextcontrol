@@ -3,7 +3,7 @@
  * Trackmania 2&2020 dedicated server controller
  */
 
-import { logger } from './lib/utilities.mjs';
+import { logger } from './lib/utilities.js';
 logger('su', 'Starting NextControl...');
 
 // import npm packages
@@ -11,11 +11,11 @@ import gbxremote from 'gbxremote';
 import mongodb from 'mongodb';
 
 // import own stuff
-import * as CallbackParams from './lib/callbackparams.mjs';
-import { ClientWrapper } from './lib/clientwrapper.mjs';
-import { DatabaseWrapper } from './lib/dbwrapper.mjs';
-import { Settings } from './settings.mjs';
-import { Sentences } from './lib/sentences.mjs';
+import * as CallbackParams from './lib/callbackparams.js';
+import { ClientWrapper } from './lib/clientwrapper.js';
+import { DatabaseWrapper } from './lib/dbwrapper.js';
+import { Settings } from './settings.js';
+import { Sentences } from './lib/sentences.js';
 
 logger('su', 'Packages imported');
 

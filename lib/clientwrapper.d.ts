@@ -5,7 +5,7 @@
 
 
 
-import * as Classes from './classes.mjs';
+import * as Classes from './classes.js';
 
 export class ClientWrapper {
     constructor(client : any);

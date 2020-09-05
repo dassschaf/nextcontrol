@@ -1,5 +1,5 @@
 # files that should not go public:
-settings.mjs
+settings.js
 
 # Logs
 logs

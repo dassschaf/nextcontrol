@@ -1,6 +1,6 @@
-import { Sentences } from '../lib/sentences.mjs';
-import { logger, format, stripFormatting } from '../lib/utilities.mjs';
-import { Settings } from '../settings.mjs';
+import { Sentences } from '../lib/sentences.js';
+import { logger, format, stripFormatting } from '../lib/utilities.js';
+import { Settings } from '../settings.js';
 
 /**
  * Join and leave message plugin

@@ -15,7 +15,7 @@ const Settings = {
         database: 'nextcontrol'
     },
 
-    disabledPlugins: [],
+    disabledPlugins: ['Sample Plugin'],
 
     admins: [
         'your login here'

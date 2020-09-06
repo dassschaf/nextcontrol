@@ -5,6 +5,7 @@
 
 import { ClientWrapper } from "./clientwrapper.js"
 import { DatabaseWrapper } from './dbwrapper.js'
+import { Server } from "mongodb";
 
 
 export class WrapperList {
@@ -112,6 +113,12 @@ export class ServerStatus {
      * Status code
      */
     code : number 
+
+    /**
+     * Constructs a Server Status object from the callback parameters as given, when Server status changes
+     * @param params callback params
+     */
+    static fromCallback(params : Array) : ServerStatus
 }
 
 /**

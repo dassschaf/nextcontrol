@@ -1,6 +1,6 @@
 /*** List of Plugins: ****/
-import { SamplePlugin } from './plugins/sample.mjs';
-import { Join } from './plugins/join.mjs';
+import { SamplePlugin } from './plugins/sample.js';
+import { Join } from './plugins/join.js';
 // import { PluginClass } from './path/to/file.mjs';
 
 export function getPluginList(conns) {

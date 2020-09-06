@@ -7,6 +7,7 @@ export function getPluginList(conns) {
     let plugins = [
         new SamplePlugin(conns),
         new Join(conns)
+        // new PluginClass(conns)
     ];
 
     return plugins;

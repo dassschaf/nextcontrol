@@ -98,6 +98,23 @@ export class Medals {
 }
 
 /**
+ * Server Status information
+ */
+export class ServerStatus {
+    constructor(struct)
+
+    /**
+     * Status name
+     */
+    name : string
+
+    /**
+     * Status code
+     */
+    code : number 
+}
+
+/**
  * Map Info object
  */
 export class Map {

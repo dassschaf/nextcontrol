@@ -12,6 +12,7 @@ import mongodb from 'mongodb';
 
 // import own stuff
 import * as CallbackParams from './lib/callbackparams.js';
+import * as Classes from './lib/classes.js';
 import { ClientWrapper } from './lib/clientwrapper.js';
 import { DatabaseWrapper } from './lib/dbwrapper.js';
 import { Settings } from './settings.js';
@@ -50,11 +51,14 @@ _client.chatSendServerMessage('Connected to database ...');
 
 // read plugins
 import { getPluginList } from './plugins.js';
-let plugins = getPluginList({ client: _client, database: _database });
+let plugins = getPluginList(new Classes.WrapperList(_client, _database));
 
 // print loaded plugins:
 let pluginList = "";
-plugins.forEach((plugin, idx) => { if (idx < plugins.length - 1) pluginList += plugin.name + ', '; else pluginList += plugin.name });
+plugins.forEach((plugin, idx) => { 
+    if (idx < plugins.length - 1) 
+        pluginList += plugin.name + ', '; else pluginList += plugin.name 
+});
 logger('su', 'Plugins loaded: ' + pluginList);
 
 // startup done, lets start waiting for the server:
@@ -83,40 +87,85 @@ client.on('callback', async (method, params) => {
             break;
 
         case 'ManiaPlanet.BeginMap':
+            p = Classes.Map.fromCallback(params);
+            plugins.forEach(plugin => { if (typeof plugin.onBeginMap != "undefined") plugin.onBeginMap(p) });
+            break;
 
         case 'ManiaPlanet.BeginMatch':
+            // has no parameters
+            plugins.forEach(plugin => { if (typeof plugin.onBeginMap != "undefined") plugin.onBeginMatch() });
+            break;
 
         case 'ManiaPlanet.BillUpdated':
+            p = new CallbackParams.UpdatedBill(params);
+            plugins.forEach(plugin => { if (typeof plugin.onBillUpdate != "undefined") plugin.onBillUpdate(p) });
+            break;
 
         case 'ManiaPlanet.EndMap':
+            p = Classes.Map.fromCallback(params);
+            plugins.forEach(plugin => { if (typeof plugin.onEndMap != "undefined") plugin.onEndMap(p) });
+            break;
+
+        case 'ManiaPlanet.EndMatch':
+            p = CallbackParams.MatchResults(params);
+            plugins.forEach(plugin => { if (typeof plugin.onEndMatch != "undefined") plugin.onEndMatch(p) });
+            break;
 
         case 'ManiaPlanet.MapListModified':
+            p = new CallbackParams.MaplistChange(params);
+            plugins.forEach(plugin => { if (typeof plugin.onMaplistChange != "undefined") plugin.onMaplistChange(p) });
+            break;
 
         case 'ManiaPlanet.ModeScriptCallback':
-
         case 'ManiaPlanet.ModeScriptCallbackArray':
+            p = new CallbackParams.ModeScriptCallback(params);
+            plugins.forEach(plugin => { if (typeof plugin.onModeScriptCallback != "undefined") plugin.onModeScriptCallback(p) });
+            break;
 
         case 'ManiaPlanet.PlayerAlliesChanged':
+            p = params[0]; // = player login
+            plugins.forEach(plugin => { if (typeof plugin.onPlayersAlliesChange != "undefined") plugin.onPlayersAlliesChange(p) });
+            break;
 
         case 'ManiaPlanet.PlayerInfoChanged':
+            p = new Classes.PlayerInfo(params[0]);
+            plugins.forEach(plugin => { if (typeof plugin.onPlayerInfoChange != "undefined") plugin.onPlayerInfoChange(p) });
+            break;
 
-        case 'ManiaPlanet.PlayerManilinkPageAnswer':
-
-        case 'ManiaPlanet.ServerStart':
-
-        case 'ManiaPlanet.ServerStop':
+        case 'ManiaPlanet.PlayerManialinkPageAnswer':
+            p = new CallbackParams.ManialinkPageAnswer(params);
+            plugins.forEach(plugin => { if (typeof plugin.onManialinkPageAnswer != "undefined") plugin.onManialinkPageAnswer(p) });
+            break;
 
         case 'ManiaPlanet.StatusChanged':
+            p = Classes.ServerStatus.fromCallback(params);
+            plugins.forEach(plugin => { if (typeof plugin.onStatusChange != "undefined") plugin.onStatusChange(p) });
+            break;
 
         case 'ManiaPlanet.TunnelDataRecieved':
+            p = new CallbackParams.TunnelData(params);
+            plugins.forEach(plugin => { if (typeof plugin.onTunnelDataRecieved != "undefined") plugin.onTunnelDataRecieved(p) });
+            break;
 
         case 'ManiaPlanet.VoteUpdated':
+            p = Classes.CallVote.fromCallback(params);
+            plugins.forEach(plugin => { if (typeof plugin.onVoteUpdate != "undefined") plugin.onVoteUpdate(p) });
+            break;
 
         case 'TrackMania.PlayerCheckpoint':
+            p = new CallbackParams.PlayerCheckpoint(params);
+            plugins.forEach(plugin => { if (typeof plugin.onCheckpoint != "undefined") plugin.onCheckpoint(p) });
+            break;
+
 
         case 'TrackMania.PlayerFinish':
+            p = new CallbackParams.PlayerFinish(params);
+            plugins.forEach(plugin => { if (typeof plugin.onFinish != "undefined") plugin.onFinish(p) });
+            break;
 
-        case 'PlayerIncoherence':
+        case 'TrackMania.PlayerIncoherence':
+            p = new CallbackParams.PlayerIncoherence(params);
+            plugins.forEach(plugin => { if (typeof plugin.onIncoherence != "undefined") plugin.onIncoherence(p) });
             break;
     }
 })

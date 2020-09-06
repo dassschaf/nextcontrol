@@ -107,7 +107,7 @@ client.on('callback', async (method, params) => {
             break;
 
         case 'ManiaPlanet.EndMatch':
-            p = CallbackParams.MatchResults(params);
+            p = new CallbackParams.MatchResults(params);
             plugins.forEach(plugin => { if (typeof plugin.onEndMatch != "undefined") plugin.onEndMatch(p) });
             break;
 

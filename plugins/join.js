@@ -36,7 +36,7 @@ export class Join {
         let serverPlayerInfo = await this.client.getPlayerInfo(params.login),
             playerInfo = await this.database.getPlayerInfo(params.login);
 
-        if (serverPlayerInfo.login != playerInfo.login)
+        if (playerInfo == null || serverPlayerInfo.login != playerInfo.login)
             playerInfo = serverPlayerInfo;           
         
         this.database.updatePlayerInfo(playerInfo);

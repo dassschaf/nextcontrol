@@ -168,9 +168,21 @@ export class Map {
 
     /**
      * Map's ID on TMX
+     * -- default value if the object is returned from the server is 
+     * -- if the object is taken from the database it is the actual TMX ID
      */
     tmxid : number;
 
+    /**
+     * Constructs a Map object from the callback parameters array
+     * @param params callback parameters array
+     */
+    static fromCallback(params : Array) : Map
+
+    /**
+     * Sets the current map's TMX ID, for use when ID is incorrect
+     * @param id new (correct) ID
+     */
     setTMXId(id : number) : void;
 }
 

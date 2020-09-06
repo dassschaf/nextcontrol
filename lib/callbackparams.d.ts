@@ -260,3 +260,30 @@ export class PlayerIncoherence {
      */
     login : string 
 }
+
+/**
+ * Class representing an updated bill
+ */
+export class UpdatedBill {
+    constructor(params : Array)
+
+    /**
+     * Bill's Id
+     */
+    billId : number
+
+    /**
+     * Bill's state
+     */
+    state : number
+
+    /**
+     * Bill's state's name
+     */
+    stateName : string 
+
+    /**
+     * Transaction Id
+     */
+    transactionId : number
+}

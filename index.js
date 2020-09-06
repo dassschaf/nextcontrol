@@ -49,7 +49,7 @@ logger('su', 'Connected to MongoDB Server');
 _client.chatSendServerMessage('Connected to database ...');
 
 // read plugins
-import { getPluginList } from './plugins.mjs';
+import { getPluginList } from './plugins.js';
 let plugins = getPluginList({ client: _client, database: _database });
 
 // print loaded plugins:

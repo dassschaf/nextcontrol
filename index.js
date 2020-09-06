@@ -82,6 +82,7 @@ client.on('callback', async (method, params) => {
             p = new CallbackParams.ChatMessage(params);
 
             if (p.text == '/shutdown' && Settings.admins.includes(p.login)) { await _client.chatSendServerMessage(Sentences.shuttingDown); logger('w', 'Shutting down after admin invoked "/shutdown" command'); process.exit(0); }
+            if (p.text == '/logline' && Settings.admins.includes(p.login))  logger('-----------');
 
             plugins.forEach(plugin => { if (typeof plugin.onChat != "undefined") plugin.onChat(p) });
             break;

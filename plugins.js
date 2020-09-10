@@ -1,13 +1,23 @@
+import { NextControl } from './nextcontrol.js';
+
 /*** List of Plugins: ****/
 import { SamplePlugin } from './plugins/sample.js';
-//import { Join } from './plugins/join.js';
+import { Join } from './plugins/join.js';
+
+// to add another plugin, uncomment and adjust this line:
 // import { PluginClass } from './path/to/file.mjs';
 
-export function getPluginList(conns) {
+/**
+ * Returns the list of ready plugins
+ * @param {NextControl} nextcontrol NextControl instance
+ */
+export function getPluginList(nextcontrol) {
     let plugins = [
-        new SamplePlugin(conns),
-        //new Join(conns)
-        // new PluginClass(conns)
+        new SamplePlugin(nextcontrol),
+        new Join(nextcontrol)
+
+        // to add another plugin, add a plugin instance to this array:
+        // new PluginClass(nextcontrol)
     ];
 
     return plugins;

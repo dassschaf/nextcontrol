@@ -58,7 +58,8 @@ export class SamplePlugin {
      * @param {NextControl} nextcontrol main class instance
      */
     commandHelloWorld(params, nextcontrol) {
-        nextcontrol.clientWrapper.chatSendServerMessageToLogin('Hello World!', params.login);
+        nextcontrol.clientWrapper.chatSendServerMessageToLogin('$f00Hello World!', params.login);
+        logger('r', 'Sent hello world to ' + params.login);
     }
 
     /**

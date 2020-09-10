@@ -21,6 +21,7 @@ import { ClientWrapper } from './lib/clientwrapper.js';
 import { DatabaseWrapper } from './lib/dbwrapper.js';
 import { Settings } from './settings.js';
 import { Sentences } from './lib/sentences.js';
+import { getPluginList } from './plugins.js'
 
 /**
  * Main class containing the controller's brain
@@ -40,7 +41,7 @@ export class NextControl {
     /**
      * Prepares NextControl to be ready for use
      */
-    async onStartup() {
+    async startup() {
         logger('su', 'Starting NextControl...');
 
         // create Trackmania XMLRPC client
@@ -81,15 +82,45 @@ export class NextControl {
 
         // woo, we're connected!
         logger('su', 'Connected to MongoDB Server');
-        _client.chatSendServerMessage('Connected to database ...');
+        this.clientWrapper.chatSendServerMessage('Connected to database ...');
+
+
 
         // now lets load plugins:
         this.chatCommands = [];
         this.adminCommands = [];
+        this.plugins = getPluginList(this);
 
+        // log plugins
+        let pluginList = "";
+        this.plugins.forEach((plugin, idx) => { 
+            if (idx < this.plugins.length - 1) 
+                pluginList += plugin.name + ', '; else pluginList += plugin.name 
+        });
+        logger('su', 'Plugins loaded: ' + pluginList);
+
+        // log commands
+        let commandList = '';
+        this.chatCommands.forEach((command, idx) => {
+            if (idx < this.chatCommands.length - 1)
+                commandList += command.commandName + ', '; else commandList += command.commandName
+        })
+        logger('su', 'Chat commands registered: ' + commandList);
+
+        // log admin commands
+        let adminCList = '';
+        this.adminCommands.forEach((command, idx) => {
+            if (idx < this.adminCommands.length - 1)
+                adminCList += command.commandName + ', '; else adminCList += command.commandName
+        })
+        logger('su', 'Admin commands registered: ' + adminCList);
 
         // now that we're done:
         this.isReady = true;
+        logger('i', 'Startup completed, starting to listen');
+        this.clientWrapper.chatSendServerMessage('Up and running!')
+
+        this.startListening();
     }
 
     /**
@@ -98,21 +129,21 @@ export class NextControl {
     async startListening() {
         if (!this.isReady) return false
 
-        client.on('callback', async (method, params) => {
+        this.client.on('callback', async (method, para) => {
             let p;
             switch (method) {
                 case 'ManiaPlanet.PlayerConnect':
-                    p = new CallbackParams.PlayerConnect(params);
-                    plugins.forEach(plugin => { if (typeof plugin.onPlayerConnect != "undefined")  plugin.onPlayerConnect(p, this) });
+                    p = new CallbackParams.PlayerConnect(para);
+                    this.plugins.forEach(plugin => { if (typeof plugin.onPlayerConnect != "undefined")  plugin.onPlayerConnect(p, this) });
                     break;
         
                 case 'ManiaPlanet.PlayerDisconnect':
-                    p = new CallbackParams.PlayerDisconnect(params);
-                    plugins.forEach(plugin => { if (typeof plugin.onPlayerDisconnect != "undefined")  plugin.onPlayerDisconnect(p, this) });
+                    p = new CallbackParams.PlayerDisconnect(para);
+                    this.plugins.forEach(plugin => { if (typeof plugin.onPlayerDisconnect != "undefined")  plugin.onPlayerDisconnect(p, this) });
                     break;
         
                 case 'ManiaPlanet.PlayerChat':
-                    p = new CallbackParams.ChatMessage(params);
+                    p = new CallbackParams.ChatMessage(para);
         
                     // two quick and dirty debug commands:
                     if (p.text == '/shutdown' && Settings.admins.includes(p.login)) { await _client.chatSendServerMessage(Sentences.shuttingDown); logger('w', 'Shutting down after admin invoked "/shutdown" command'); process.exit(0); }
@@ -120,120 +151,122 @@ export class NextControl {
                     if (p.text == '/logline' && Settings.admins.includes(p.login))  logger('-----------');
 
                     // chat command handling
-                    let command = p.text.split('/')[1].split(' ', 1)[0],
-                        params = p.text.split('/')[1].split(' ', 1)[1];
+                    if (p.isCommand) {
+                        let command = p.text.split('/')[1].split(' ', 1)[0],
+                            params = p.text.split('/')[1].split(' ', 1)[1];
 
-                    if (p.isCommand && command == admin) {
-                        // handle admin command, command is "first" parameter
+                        if (command == 'admin') {
+                            // handle admin command, command is "first" parameter
+                            
+                            let adminCommand = params.split(' ', 1)[0],
+                                adminParams = params.split(' ', 1)[1];
+
+                            this.adminCommands.forEach(commandDefinition => {
+                                if (commandDefinition.commandName === adminCommand) 
+                                    commandDefinition.commandHandler(
+                                        new Classes.ChatCommandParameters(p.playerUid, p.login, adminParams),
+                                        this
+                                    );
+                            });
+                        }
                         
-                        let adminCommand = params.split(' ', 1)[0],
-                            adminParams = params.split(' ', 1)[1];
+                        else {
+                            // handle regular command
 
-                        this.adminCommands.forEach(commandDefinition => {
-                            if (commandDefinition.commandName === adminCommand) 
-                                commandDefinition.commandHandler(
-                                    new Classes.ChatCommandParameters(p.playerUid, p.login, adminParams),
-                                    this
-                                );
-                        });
-                    }
-                    
-                    else if (p.isCommand) {
-                        // handle regular command
-
-                        this.chatCommands.forEach(commandDefinition => {
-                            if (commandDefinition.commandName === command)
-                                commandDefinition.commandHandler(
-                                    new Classes.ChatCommandParameters(p.playerUid, p.login, params),
-                                    this
-                                );
-                        });
+                            this.chatCommands.forEach(commandDefinition => {
+                                if (commandDefinition.commandName === command)
+                                    commandDefinition.commandHandler(
+                                        new Classes.ChatCommandParameters(p.playerUid, p.login, params),
+                                        this
+                                    );
+                            });
+                        }
                     }
 
                     // regular onChat function        
-                    plugins.forEach(plugin => { if (typeof plugin.onChat != "undefined") plugin.onChat(p, this) });
+                    this.plugins.forEach(plugin => { if (typeof plugin.onChat != "undefined") plugin.onChat(p, this) });
                     break;
         
                 case 'ManiaPlanet.BeginMap':
-                    p = Classes.Map.fromCallback(params);
-                    plugins.forEach(plugin => { if (typeof plugin.onBeginMap != "undefined") plugin.onBeginMap(p, this) });
+                    p = Classes.Map.fromCallback(para);
+                    this.plugins.forEach(plugin => { if (typeof plugin.onBeginMap != "undefined") plugin.onBeginMap(p, this) });
                     break;
         
                 case 'ManiaPlanet.BeginMatch':
                     // has no parameters
-                    plugins.forEach(plugin => { if (typeof plugin.onBeginMap != "undefined") plugin.onBeginMatch(this) });
+                    this.plugins.forEach(plugin => { if (typeof plugin.onBeginMap != "undefined") plugin.onBeginMatch(this) });
                     break;
         
                 case 'ManiaPlanet.BillUpdated':
-                    p = new CallbackParams.UpdatedBill(params);
-                    plugins.forEach(plugin => { if (typeof plugin.onBillUpdate != "undefined") plugin.onBillUpdate(p, this) });
+                    p = new CallbackParams.UpdatedBill(para);
+                    this.plugins.forEach(plugin => { if (typeof plugin.onBillUpdate != "undefined") plugin.onBillUpdate(p, this) });
                     break;
         
                 case 'ManiaPlanet.EndMap':
-                    p = Classes.Map.fromCallback(params);
-                    plugins.forEach(plugin => { if (typeof plugin.onEndMap != "undefined") plugin.onEndMap(p, this) });
+                    p = Classes.Map.fromCallback(para);
+                    this.plugins.forEach(plugin => { if (typeof plugin.onEndMap != "undefined") plugin.onEndMap(p, this) });
                     break;
         
                 case 'ManiaPlanet.EndMatch':
-                    p = new CallbackParams.MatchResults(params);
-                    plugins.forEach(plugin => { if (typeof plugin.onEndMatch != "undefined") plugin.onEndMatch(p, this) });
+                    p = new CallbackParams.MatchResults(para);
+                    this.plugins.forEach(plugin => { if (typeof plugin.onEndMatch != "undefined") plugin.onEndMatch(p, this) });
                     break;
         
                 case 'ManiaPlanet.MapListModified':
-                    p = new CallbackParams.MaplistChange(params);
-                    plugins.forEach(plugin => { if (typeof plugin.onMaplistChange != "undefined") plugin.onMaplistChange(p, this) });
+                    p = new CallbackParams.MaplistChange(para);
+                    this.plugins.forEach(plugin => { if (typeof plugin.onMaplistChange != "undefined") plugin.onMaplistChange(p, this) });
                     break;
         
                 case 'ManiaPlanet.ModeScriptCallback':
                 case 'ManiaPlanet.ModeScriptCallbackArray':
-                    p = new CallbackParams.ModeScriptCallback(params);
-                    plugins.forEach(plugin => { if (typeof plugin.onModeScriptCallback != "undefined") plugin.onModeScriptCallback(p, this) });
+                    p = new CallbackParams.ModeScriptCallback(para);
+                    this.plugins.forEach(plugin => { if (typeof plugin.onModeScriptCallback != "undefined") plugin.onModeScriptCallback(p, this) });
                     break;
         
                 case 'ManiaPlanet.PlayerAlliesChanged':
-                    p = params[0]; // = player login
-                    plugins.forEach(plugin => { if (typeof plugin.onPlayersAlliesChange != "undefined") plugin.onPlayersAlliesChange(p, this) });
+                    p = para[0]; // = player login
+                    this.plugins.forEach(plugin => { if (typeof plugin.onPlayersAlliesChange != "undefined") plugin.onPlayersAlliesChange(p, this) });
                     break;
         
                 case 'ManiaPlanet.PlayerInfoChanged':
-                    p = new Classes.PlayerInfo(params[0]);
-                    plugins.forEach(plugin => { if (typeof plugin.onPlayerInfoChange != "undefined") plugin.onPlayerInfoChange(p, this) });
+                    p = new Classes.PlayerInfo(para[0]);
+                    this.plugins.forEach(plugin => { if (typeof plugin.onPlayerInfoChange != "undefined") plugin.onPlayerInfoChange(p, this) });
                     break;
         
                 case 'ManiaPlanet.PlayerManialinkPageAnswer':
-                    p = new CallbackParams.ManialinkPageAnswer(params);
-                    plugins.forEach(plugin => { if (typeof plugin.onManialinkPageAnswer != "undefined") plugin.onManialinkPageAnswer(p, this) });
+                    p = new CallbackParams.ManialinkPageAnswer(para);
+                    this.plugins.forEach(plugin => { if (typeof plugin.onManialinkPageAnswer != "undefined") plugin.onManialinkPageAnswer(p, this) });
                     break;
         
                 case 'ManiaPlanet.StatusChanged':
-                    p = Classes.ServerStatus.fromCallback(params);
-                    plugins.forEach(plugin => { if (typeof plugin.onStatusChange != "undefined") plugin.onStatusChange(p, this) });
+                    p = Classes.ServerStatus.fromCallback(para);
+                    this.plugins.forEach(plugin => { if (typeof plugin.onStatusChange != "undefined") plugin.onStatusChange(p, this) });
                     break;
         
                 case 'ManiaPlanet.TunnelDataRecieved':
-                    p = new CallbackParams.TunnelData(params);
-                    plugins.forEach(plugin => { if (typeof plugin.onTunnelDataRecieved != "undefined") plugin.onTunnelDataRecieved(p, this) });
+                    p = new CallbackParams.TunnelData(para);
+                    this.plugins.forEach(plugin => { if (typeof plugin.onTunnelDataRecieved != "undefined") plugin.onTunnelDataRecieved(p, this) });
                     break;
         
                 case 'ManiaPlanet.VoteUpdated':
-                    p = Classes.CallVote.fromCallback(params);
-                    plugins.forEach(plugin => { if (typeof plugin.onVoteUpdate != "undefined") plugin.onVoteUpdate(p, this) });
+                    p = Classes.CallVote.fromCallback(para);
+                    this.plugins.forEach(plugin => { if (typeof plugin.onVoteUpdate != "undefined") plugin.onVoteUpdate(p, this) });
                     break;
         
                 case 'TrackMania.PlayerCheckpoint':
-                    p = new CallbackParams.PlayerCheckpoint(params);
-                    plugins.forEach(plugin => { if (typeof plugin.onCheckpoint != "undefined") plugin.onCheckpoint(p, this) });
+                    p = new CallbackParams.PlayerCheckpoint(para);
+                    this.plugins.forEach(plugin => { if (typeof plugin.onCheckpoint != "undefined") plugin.onCheckpoint(p, this) });
                     break;
         
         
                 case 'TrackMania.PlayerFinish':
-                    p = new CallbackParams.PlayerFinish(params);
-                    plugins.forEach(plugin => { if (typeof plugin.onFinish != "undefined") plugin.onFinish(p, this) });
+                    p = new CallbackParams.PlayerFinish(para);
+                    this.plugins.forEach(plugin => { if (typeof plugin.onFinish != "undefined") plugin.onFinish(p, this) });
                     break;
         
                 case 'TrackMania.PlayerIncoherence':
-                    p = new CallbackParams.PlayerIncoherence(params);
-                    plugins.forEach(plugin => { if (typeof plugin.onIncoherence != "undefined") plugin.onIncoherence(p, this) });
+                    p = new CallbackParams.PlayerIncoherence(para);
+                    this.plugins.forEach(plugin => { if (typeof plugin.onIncoherence != "undefined") plugin.onIncoherence(p, this) });
                     break;
             }
         });
@@ -258,10 +291,13 @@ export class NextControl {
      * Registers a chat command to be used
      * @param {Classes.ChatCommand} commandDefinition 
      */
-    registerAdminCommand(commandDefinition) { }
+    registerAdminCommand(commandDefinition) { 
+
+
+        
+    }
     
 }
 
 let nc = new NextControl();
-await nc.onStartup();
-await nc.startListening();
+await nc.startup();

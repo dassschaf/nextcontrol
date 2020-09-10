@@ -2,7 +2,7 @@ import Client from "gbxremote/lib/client";
 import { ClientWrapper } from "./lib/clientwrapper";
 import { Db } from "mongodb";
 import { DatabaseWrapper } from "./lib/dbwrapper";
-import { ChatCommandDefinition, ChatCommand } from "./lib/classes";
+import * as Classes from "./lib/classes";
 
 export class NextControl {
     
@@ -14,7 +14,7 @@ export class NextControl {
     /**
      * Prepares NextControl to be ready for use
      */
-    onStartup() : void 
+    startup() : void 
 
     /**
      * Function, listening to server callbacks when called
@@ -56,6 +56,18 @@ export class NextControl {
      * List of registered admin chat commands
      */
     adminChatCommands : Array<ChatCommand>
+
+    /**
+     * Registers a chat command to be used
+     * @param commandDefinition Object containing the definitions for the command
+     */
+    registerChatCommand(commandDefinition : Classes.ChatCommand) : void
+
+    /**
+     * Registers an admin command to be used
+     * @param commandDefinition Object containing the definitions for the command
+     */
+    registerAdminCommand(commandDefinition : Classes.ChatCommand) : void
     
 }
 

@@ -146,7 +146,7 @@ export class NextControl {
                     p = new CallbackParams.ChatMessage(para);
         
                     // two quick and dirty debug commands:
-                    if (p.text == '/shutdown' && Settings.admins.includes(p.login)) { await _client.chatSendServerMessage(Sentences.shuttingDown); logger('w', 'Shutting down after admin invoked "/shutdown" command'); process.exit(0); }
+                    if (p.text == '/shutdown' && Settings.admins.includes(p.login)) { await this.clientWrapper.chatSendServerMessage(Sentences.shuttingDown); logger('w', 'Shutting down after admin invoked "/shutdown" command'); process.exit(0); }
 
                     if (p.text == '/logline' && Settings.admins.includes(p.login))  logger('-----------');
 

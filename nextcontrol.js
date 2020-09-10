@@ -152,14 +152,26 @@ export class NextControl {
 
                     // chat command handling
                     if (p.isCommand) {
-                        let command = p.text.split('/')[1].split(' ', 1)[0],
-                            params = p.text.split('/')[1].split(' ', 1)[1];
+
+                        let splitCommand = p.text.split('/')[1].split(' '),
+                            command = splitCommand.shift(),
+                            params = splitCommand.join(' ');
+
 
                         if (command == 'admin') {
                             // handle admin command, command is "first" parameter
+
+                            if (!Settings.admins.includes(p.login)) {
+                                // player is not admin!
+                                logger('r', p.login + ' tried using admin command /' + adminCommand + ', but is no admin!');
+                                this.clientWrapper.chatSendServerMessageToLogin(Sentences.playerNotAdmin, p.login);
+                            }
                             
-                            let adminCommand = params.split(' ', 1)[0],
-                                adminParams = params.split(' ', 1)[1];
+                            let splitAdminCommand = params.split(' '),
+                                adminCommand = splitAdminCommand.shift(),
+                                adminParams = splitAdminCommand.join(' ');
+
+                            logger('r', p.login + ' used admin command /' + adminCommand + ' with parameters: ' + adminParams);
 
                             this.adminCommands.forEach(commandDefinition => {
                                 if (commandDefinition.commandName === adminCommand) 
@@ -172,6 +184,7 @@ export class NextControl {
                         
                         else {
                             // handle regular command
+                            logger('r', p.login + ' used command /' + command + ' with parameters: ' + params);
 
                             this.chatCommands.forEach(commandDefinition => {
                                 if (commandDefinition.commandName === command)
@@ -293,7 +306,10 @@ export class NextControl {
      */
     registerAdminCommand(commandDefinition) { 
 
+        // faulty command definition
+        if (commandDefinition.commandName == undefined || commandDefinition.commandHandler == undefined || commandDefinition.commandDescription == undefined || commandDefinition.commandName == '' || commandDefinition.commandDescription == '') { logger('w', `Chat command ${commandDefinition.toString()} from plugin ${commandDefinition.pluginName} has an invalid command definition lacking name, a handler function or a description, fix the plugin or contact the plugin's developer.`); return; }
 
+        this.adminCommands.push(commandDefinition);
         
     }
     

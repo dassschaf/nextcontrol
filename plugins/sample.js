@@ -38,7 +38,7 @@ export class SamplePlugin {
         // register chat commands here:
         nextcontrol.registerChatCommand(new Classes.ChatCommand(
             // command name -- no spaces allowed, name admin forbidden!
-            'HelloWorld',
+            'helloWorld',
 
             // command handler:
             this.commandHelloWorld,
@@ -47,6 +47,20 @@ export class SamplePlugin {
             'A simple Hello World command, demonstrating command implementation',
 
             // this plugin's name:
+            this.name
+        ));
+
+        // register admin commands like this:
+        nextcontrol.registerAdminCommand(new Classes.ChatCommand(
+            // name:
+            'helloWorld',
+
+            // handler:
+            this.commandAdminHelloWorld,
+
+            // description:
+            'Hello world, but for admins.',
+
             this.name
         ));
 
@@ -59,7 +73,15 @@ export class SamplePlugin {
      */
     commandHelloWorld(params, nextcontrol) {
         nextcontrol.clientWrapper.chatSendServerMessageToLogin('$f00Hello World!', params.login);
-        logger('r', 'Sent hello world to ' + params.login);
+    }
+
+    /**
+     * Hello World chat command for admins!
+     * @param {Classes.ChatCommandParameters} params parameters
+     * @param {NextControl} nextcontrol main class instance
+     */
+    commandAdminHelloWorld(params, nextcontrol) {
+        nextcontrol.clientWrapper.chatSendServerMessageToLogin('$f0fHello World!', params.login);
     }
 
     /**

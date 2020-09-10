@@ -18,8 +18,6 @@ import { DatabaseWrapper } from './lib/dbwrapper.js';
 import { Settings } from './settings.js';
 import { Sentences } from './lib/sentences.js';
 
-logger('su', 'Packages imported');
-
 // starting up NextControl
 // create Trackmania XMLRPC client
 let client = gbxremote.createClient(5555);

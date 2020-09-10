@@ -6,6 +6,7 @@
 import { ClientWrapper } from "./clientwrapper.js"
 import { DatabaseWrapper } from './dbwrapper.js'
 import { Server } from "mongodb";
+import { NextControl } from "../nextcontrol.js";
 
 
 export class WrapperList {
@@ -332,4 +333,71 @@ export class PlayerResults {
      * Gained ladder score
      */
     ladderScore     : number
+}
+
+/**
+ * Chat Command definition containing command name and command handler
+ */
+export class ChatCommand {
+    /**
+     * Constructs a new chat command definition to be registered at the main class
+     * @param {string} name chat command name (the part after the slash)
+     * @param {Function} handlerFunction Function handling the said chat command
+     * @param {string} description chat command description
+     * @param {string} pgname name of the plugin, registering the chat command
+     */
+    constructor(name : string, handlerFunction : Function, description : string, pgname : string)
+
+    /**
+     * command name
+     */
+    commandName : string 
+
+    /**
+     * function handling the chat command
+     */
+    commandHandler : (params : ChatCommandParameters, nextcontrol : NextControl) => void
+
+    /**
+     * command description, as displayed in the commands help
+     */
+    commandDescription : string
+
+    /**
+     * name of the plugin, registering the chat command
+     */
+    pluginName : string
+
+    /**
+     * Outputs command name as toString
+     */
+    toString() : string
+}
+
+/**
+ * Class representing the information of a chat command
+ */
+export class ChatCommandParameters {
+    /**
+     * construct command parameters object
+     * @param uid Unique identifier of the player using the command
+     * @param login Login of the player using the command
+     * @param params Command parameters as entered by the player as string including whitespaces
+     */
+    constructor(uid : string, login : string, params : string)
+
+    /**
+     * Unique identifier of the player using the command
+     */
+    uid : string 
+
+    /**
+     * Login of the player using the command
+     */
+    login : string 
+
+    /**
+     * Command parameters as entered by the player as string including whitespaces
+     */
+    params : string
 }

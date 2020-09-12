@@ -84,8 +84,6 @@ export class NextControl {
         logger('su', 'Connected to MongoDB Server');
         this.clientWrapper.chatSendServerMessage('Connected to database ...');
 
-
-
         // now lets load plugins:
         this.chatCommands = [];
         this.adminCommands = [];

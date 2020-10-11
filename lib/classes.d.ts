@@ -401,3 +401,36 @@ export class ChatCommandParameters {
      */
     params : string
 }
+
+
+/**
+ *  Class representing a local record
+ */
+export class LocalRecord {
+    /**
+     * 
+     * @param login player login
+     * @param time record time or score
+     * @param track track UID
+     */
+    constructor(login : string, time : number, track : string) {
+        this.login = login;
+        this.time = time;
+        this.track = track;
+    }
+
+    /**
+     * Player login
+     */
+    login : string
+
+    /**
+     * record time or score
+     */
+    time : number
+
+    /**
+     * track UID
+     */
+    track : string
+}

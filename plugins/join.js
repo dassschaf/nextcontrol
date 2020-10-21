@@ -36,7 +36,7 @@ export class Join {
         nextcontrol.databaseWrapper.updatePlayerInfo(playerInfo);
 
         logger('r', stripFormatting(playerInfo.name) + ' has joined the server');
-        nextcontrol.clientWrapper.chatSendServerMessage(format(Sentences.playerConnect, [playerInfo.name]));
+        nextcontrol.clientWrapper.chatSendServerMessage(format(Sentences.playerConnect, { player: playerInfo.name }));
     }
 
     /**
@@ -51,6 +51,6 @@ export class Join {
             playerInfo = {name: 'unknown', login: 'unknown'};
 
         logger('r', stripFormatting(playerInfo.name) + ' has left the server');
-        nextcontrol.clientWrapper.chatSendServerMessage(format(Sentences.playerDisconnect, [playerInfo.name]));
+        nextcontrol.clientWrapper.chatSendServerMessage(format(Sentences.playerDisconnect, { player: playerInfo.name }));
     }
 }

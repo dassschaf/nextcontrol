@@ -65,7 +65,7 @@ export class LocalRecords {
 
         // print local records to chat
         if (await nextcontrol.database.collection('records').countDocuments() < 1) {
-            nextcontrol.clientWrapper.chatSendServerMessage(format(Sentences.localRecords.noneYet, [Sentences.localRecords.before]));
+            nextcontrol.clientWrapper.chatSendServerMessage(format(Sentences.localRecords.noneYet, { when: Sentences.localRecords.before }));
         } else {
             // do smth
         }
@@ -99,6 +99,7 @@ export class LocalRecords {
         // get current local record and determine whether improvement
         if (await nextcontrol.database.collection('records').countDocuments({ uid: uid, login: login }) < 1) {
             // no record exists yet
+            
             
             
         } else {

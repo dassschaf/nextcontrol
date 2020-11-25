@@ -16,6 +16,7 @@
     "chalk": "^4.1.0",
     "gbxremote": "^0.2.1",
     "got": "^11.8.0",
+    "json-beautify": "^1.1.1",
     "mongodb": "^3.6.3"
   }
 }

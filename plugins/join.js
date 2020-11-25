@@ -22,7 +22,7 @@ export class Join {
 
     /**
      * Function run, when a player joins the server
-     * @param {CallbackParams.PlayerConnect} params Callback parameters
+     * @param {Classes.PlayerInfo} params Player Info
      * @param {NextControl} nextcontrol main class instance
      */
     async onPlayerConnect(params, nextcontrol) {

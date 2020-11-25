@@ -86,7 +86,7 @@ export class SamplePlugin {
 
     /**
      * Function run, when a player joins the server
-     * @param {CallbackParams.PlayerConnect} params Callback parameters
+     * @param {Classes.PlayerInfo} params Player Info
      * @param {NextControl} nextcontrol main class instance
      */
     onPlayerConnect(params, nextcontrol) {
@@ -99,7 +99,7 @@ export class SamplePlugin {
      * @param {CallbackParams.ChatMessage} params Callback parameters
      * @param {NextControl} nextcontrol main class instance
      */
-    onChat(params, nextcontrol) {
+    async onChat(params, nextcontrol) {
 
     }
 
@@ -108,7 +108,7 @@ export class SamplePlugin {
      * @param {CallbackParams.PlayerDisconnect} params Callback parameters
      * @param {NextControl} nextcontrol main class instance
      */
-    onPlayerDisconnect(params, nextcontrol) {
+    async onPlayerDisconnect(params, nextcontrol) {
 
     }
 
@@ -117,7 +117,7 @@ export class SamplePlugin {
      * @param {Classes.Map} params Callback parameters
      * @param {NextControl} nextcontrol main class instance
      */
-    onBeginMap(params, nextcontrol) {
+    async onBeginMap(params, nextcontrol) {
 
     }
 
@@ -125,7 +125,7 @@ export class SamplePlugin {
      * Function run, when a new match begins
      * @param {NextControl} nextcontrol main class instance
      */
-    onBeginMatch(nextcontrol) {
+    async onBeginMatch(nextcontrol) {
 
     }
 
@@ -134,7 +134,7 @@ export class SamplePlugin {
      * @param {CallbackParams.UpdatedBill} params Callback parameters
      * @param {NextControl} nextcontrol main class instance
      */
-    onBillUpdate(params, nextcontrol) {
+    async onBillUpdate(params, nextcontrol) {
 
     }
 
@@ -143,7 +143,7 @@ export class SamplePlugin {
      * @param {Classes.Map} params Callback parameters
      * @param {NextControl} nextcontrol main class instance
      */
-    onEndMap(params, nextcontrol) {
+    async onEndMap(params, nextcontrol) {
 
     }
 
@@ -152,7 +152,7 @@ export class SamplePlugin {
      * @param {CallbackParams.MatchResults} params Callback parameters
      * @param {NextControl} nextcontrol main class instance
      */
-    onEndMatch(params, nextcontrol) {
+    async onEndMatch(params, nextcontrol) {
 
     }
 
@@ -161,7 +161,7 @@ export class SamplePlugin {
      * @param {CallbackParams.MaplistChange} params Callback parameters
      * @param {NextControl} nextcontrol main class instance
      */
-    onMaplistChange(params, nextcontrol) {
+    async onMaplistChange(params, nextcontrol) {
 
     }
 
@@ -170,7 +170,7 @@ export class SamplePlugin {
      * @param {CallbackParams.ModeScriptCallback} params Callback parameters
      * @param {NextControl} nextcontrol main class instance
      */
-    onModeScriptCallback(params, nextcontrol) {
+    async onModeScriptCallback(params, nextcontrol) {
 
     }
 
@@ -179,7 +179,7 @@ export class SamplePlugin {
      * @param {string} login Player's login
      * @param {NextControl} nextcontrol main class instance
      */
-    onPlayersAlliesChange(login, nextcontrol) {
+    async onPlayersAlliesChange(login, nextcontrol) {
 
     }
 
@@ -188,7 +188,7 @@ export class SamplePlugin {
      * @param {Classes.PlayerInfo} params Callback parameters
      * @param {NextControl} nextcontrol main class instance
      */
-    onPlayerInfoChange(params, nextcontrol) {
+    async onPlayerInfoChange(params, nextcontrol) {
 
     }
 
@@ -197,7 +197,7 @@ export class SamplePlugin {
      * @param {CallbackParams.ManialinkPageAnswer} params Callback parameters
      * @param {NextControl} nextcontrol main class instance
      */
-    onManialinkPageAnswer(params, nextcontrol) {
+    async onManialinkPageAnswer(params, nextcontrol) {
 
     }
 
@@ -206,7 +206,7 @@ export class SamplePlugin {
      * @param {Classes.ServerStatus} params Server Status object
      * @param {NextControl} nextcontrol main class instance
      */
-    onStatusChange(params, nextcontrol) {
+    async onStatusChange(params, nextcontrol) {
         
     }
 
@@ -215,7 +215,7 @@ export class SamplePlugin {
      * @param {CallbackParams.TunnelData} params Callback params
      * @param {NextControl} nextcontrol main class instance
      */
-    onTunnelDataRecieved(params, nextcontrol) {
+    async onTunnelDataRecieved(params, nextcontrol) {
 
     }
 
@@ -224,7 +224,7 @@ export class SamplePlugin {
      * @param {Classes.CallVote} params Callback params
      * @param {NextControl} nextcontrol main class instance
      */
-    onVoteUpdate(params, nextcontrol) {
+    async onVoteUpdate(params, nextcontrol) {
 
     }    
 
@@ -233,7 +233,7 @@ export class SamplePlugin {
      * @param {CallbackParams.PlayerCheckpoint} params Callback params
      * @param {NextControl} nextcontrol main class instance
      */
-    onCheckpoint(params, nextcontrol) {
+    async onCheckpoint(params, nextcontrol) {
 
     }
 
@@ -242,7 +242,7 @@ export class SamplePlugin {
      * @param {CallbackParams.PlayerFinish} params Callback params
      * @param {NextControl} nextcontrol main class instance
      */
-    onFinish(params, nextcontrol) {
+    async onFinish(params, nextcontrol) {
 
     }
 
@@ -251,7 +251,7 @@ export class SamplePlugin {
      * @param {CallbackParams.PlayerIncoherence} params Callback params
      * @param {NextControl} nextcontrol main class instance
      */
-    onIncoherence(params, nextcontrol) {
+    async onIncoherence(params, nextcontrol) {
 
     }
 

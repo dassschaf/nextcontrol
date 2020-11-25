@@ -52,7 +52,7 @@ export class LocalRecords {
      * @param {Classes.Map} params Callback parameters
      * @param {NextControl} nextcontrol main class instance
      */
-    onBeginMap(params, nextcontrol) {
+    async onBeginMap(params, nextcontrol) {
 
         // read track info into variable
         let map = nextcontrol.clientWrapper.getCurrentMapInfo()
@@ -78,7 +78,7 @@ export class LocalRecords {
      * @param {Classes.Map} params Callback parameters
      * @param {NextControl} nextcontrol main class instance
      */
-    onEndMap(params, nextcontrol) {
+    async onEndMap(params, nextcontrol) {
 
         // print local records to chat
 
@@ -89,7 +89,7 @@ export class LocalRecords {
      * @param {CallbackParams.PlayerFinish} params Callback params
      * @param {NextControl} nextcontrol main class instance
      */
-    onFinish(params, nextcontrol) {
+    async onFinish(params, nextcontrol) {
 
         if (params.timeOrScore == 0) return; // bail out, if there's no finish time
 

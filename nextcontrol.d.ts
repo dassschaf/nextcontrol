@@ -58,6 +58,11 @@ export class NextControl {
     adminChatCommands : Array<ChatCommand>
 
     /**
+     * Current server status
+     */
+    status : Classes.Status
+
+    /**
      * Registers a chat command to be used
      * @param commandDefinition Object containing the definitions for the command
      */

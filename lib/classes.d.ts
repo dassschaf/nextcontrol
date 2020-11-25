@@ -193,7 +193,7 @@ export class Map {
 
     /**
      * Map's ID on TMX
-     * -- default value if the object is returned from the server is 
+     * -- default value if the object is returned from the server is -1 
      * -- if the object is taken from the database it is the actual TMX ID
      */
     tmxid : number;
@@ -433,4 +433,48 @@ export class LocalRecord {
      * track UID
      */
     track : string
+}
+
+/**
+ * Class representing the current server status
+ */
+export class Status {
+
+    /**
+     * initializes the status object
+     * @param {NextControl} nc 
+     */
+    async init(nc) : void
+
+    /**
+     * Removes a player from the list
+     * @param {String} login 
+     */
+    removePlayer(login) : void
+
+    /**
+     * Adds a player to the list
+     * @param {PlayerInfo} player 
+     */
+    addPlayer(player) : void
+
+    /**
+     * Returns, whether the current mode script supports time extension or not.
+     */
+    isTimeExtendable() : Boolean
+
+    /**
+     * currently played map
+     */
+    map : Map
+
+    /**
+     * Array of currently present players
+     */
+    players : Array<PlayerInfo>
+
+    /**
+     * Gamemode settings
+     */
+    modeScriptSettings : Object
 }

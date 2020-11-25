@@ -135,7 +135,7 @@ export class NextControl {
         await this.status.init(this);
 
         // TODO: add debug switch to not clutter console.
-        console.log(beautify(this.status, null, 2));
+        //console.log(beautify(this.status, null, 2));
         
         // start actually listening
         this.client.on('callback', async (method, para) => {
@@ -225,7 +225,9 @@ export class NextControl {
                 case 'ManiaPlanet.BeginMap':
                     p = Classes.Map.fromCallback(para);
 
-                    if (this.database.collection('maps').countDocuments({uid : p.uid}) > 0)
+                    console.log(beautify(p));
+
+                    if (await this.database.collection('maps').countDocuments({uid : p.uid}) > 0)
                         p = await this.database.collection('maps').findOne({uid : p.uid});
 
                     else {
@@ -237,14 +239,14 @@ export class NextControl {
                     }
 
                     // update status:
-                    
+                    this.status.map = p;
 
                     this.plugins.forEach(plugin => { if (typeof plugin.onBeginMap != "undefined") plugin.onBeginMap(p, this) });
                     break;
         
                 case 'ManiaPlanet.BeginMatch':
                     // has no parameters
-                    this.plugins.forEach(plugin => { if (typeof plugin.onBeginMap != "undefined") plugin.onBeginMatch(this) });
+                    this.plugins.forEach(plugin => { if (typeof plugin.onBeginMatch != "undefined") plugin.onBeginMatch(this) });
                     break;
         
                 case 'ManiaPlanet.BillUpdated':

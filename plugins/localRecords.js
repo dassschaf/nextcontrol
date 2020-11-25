@@ -54,18 +54,9 @@ export class LocalRecords {
      */
     async onBeginMap(params, nextcontrol) {
 
-        // read track info into variable
-        let map = nextcontrol.clientWrapper.getCurrentMapInfo()
-        this.currentTrack.uid = map.uid;
-
-        // add track to database, if it hasn't been added yet
-        if (await nextcontrol.database.collection('maps').countDocuments({ uid: map.uid }) < 1) {
-            await nextcontrol.database.collection('maps').insertOne(map);
-        }
-
         // print local records to chat
         if (await nextcontrol.database.collection('records').countDocuments() < 1) {
-            nextcontrol.clientWrapper.chatSendServerMessage(format(Sentences.localRecords.noneYet, { when: Sentences.localRecords.before }));
+            nextcontrol.clientWrapper.chatSendServerMessage(format(Sentences.localRecords.noneYet, { when: Sentences.localRecords.before, track: stripFormatting(nextcontrol.status.map.name)}));
         } else {
             // do smth
         }
@@ -93,14 +84,16 @@ export class LocalRecords {
 
         if (params.timeOrScore == 0) return; // bail out, if there's no finish time
 
-        let uid = this.currentTrack.uid,
+        let uid = nextcontrol.status.map.uid,
             login = params.login;
 
         // get current local record and determine whether improvement
         if (await nextcontrol.database.collection('records').countDocuments({ uid: uid, login: login }) < 1) {
             // no record exists yet
-            
-            
+            // insert new record document
+            let rec = new Classes.LocalRecord(login, params.timeOrScore, uid);
+
+            await nextcontrol.database.collection('records').insertOne(rec);
             
         } else {
             // there is already an existing, matching record:

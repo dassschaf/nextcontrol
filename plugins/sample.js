@@ -71,7 +71,7 @@ export class SamplePlugin {
      * @param {Classes.ChatCommandParameters} params parameters
      * @param {NextControl} nextcontrol main class instance
      */
-    commandHelloWorld(params, nextcontrol) {
+    async commandHelloWorld(params, nextcontrol) {
         nextcontrol.clientWrapper.chatSendServerMessageToLogin('$f00Hello World!', params.login);
     }
 
@@ -80,7 +80,7 @@ export class SamplePlugin {
      * @param {Classes.ChatCommandParameters} params parameters
      * @param {NextControl} nextcontrol main class instance
      */
-    commandAdminHelloWorld(params, nextcontrol) {
+    async commandAdminHelloWorld(params, nextcontrol) {
         nextcontrol.clientWrapper.chatSendServerMessageToLogin('$f0fHello World!', params.login);
     }
 
@@ -89,7 +89,7 @@ export class SamplePlugin {
      * @param {Classes.PlayerInfo} params Player Info
      * @param {NextControl} nextcontrol main class instance
      */
-    onPlayerConnect(params, nextcontrol) {
+    async onPlayerConnect(params, nextcontrol) {
 
     }
 

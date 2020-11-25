@@ -53,7 +53,7 @@ export class Join {
      * @param {NextControl} nextcontrol main class instance
      */
     async onPlayerDisconnect(params, nextcontrol) {
-        let playerInfo = await nextcontrol.databaseWrapper.getPlayerInfo(params.login);
+        let playerInfo = await nextcontrol.database.collection('players').findOne({ login: params.login });
 
         if (playerInfo.login == undefined) // if player is for some reason unknown to database:
             playerInfo = {name: 'unknown', login: 'unknown'};

@@ -225,8 +225,6 @@ export class NextControl {
                 case 'ManiaPlanet.BeginMap':
                     p = Classes.Map.fromCallback(para);
 
-                    console.log(beautify(p));
-
                     if (await this.database.collection('maps').countDocuments({uid : p.uid}) > 0)
                         p = await this.database.collection('maps').findOne({uid : p.uid});
 

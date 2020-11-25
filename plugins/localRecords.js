@@ -56,7 +56,7 @@ export class LocalRecords {
 
         // print local records to chat
         if (await nextcontrol.database.collection('records').countDocuments() < 1) {
-            nextcontrol.clientWrapper.chatSendServerMessage(format(Sentences.localRecords.noneYet, { when: Sentences.localRecords.before, track: stripFormatting(nextcontrol.status.map.name)}));
+            nextcontrol.clientWrapper.chatSendServerMessage(format(Sentences.localRecords.noneYet, { when: Sentences.localRecords.before, track: nextcontrol.status.map.name}));
         } else {
             // do smth
         }

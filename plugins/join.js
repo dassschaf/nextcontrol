@@ -31,12 +31,20 @@ export class Join {
             playerInfo = await nextcontrol.databaseWrapper.getPlayerInfo(params.login);
 
         if (playerInfo == null || serverPlayerInfo.login != playerInfo.login)
-            playerInfo = serverPlayerInfo;           
+            playerInfo = serverPlayerInfo;                       
         
         nextcontrol.databaseWrapper.updatePlayerInfo(playerInfo);
 
-        logger('r', stripFormatting(playerInfo.name) + ' has joined the server');
-        nextcontrol.clientWrapper.chatSendServerMessage(format(Sentences.playerConnect, { player: playerInfo.name }));
+        if (Settings.admins.includes(params.login)) {
+            logger('r','Admin ' + stripFormatting(playerInfo.name) + ' has joined the server');
+            nextcontrol.clientWrapper.chatSendServerMessage(format(Sentences.adminConnect, { player: playerInfo.name }));
+        }
+        else {
+            logger('r', stripFormatting(playerInfo.name) + ' has joined the server');
+            nextcontrol.clientWrapper.chatSendServerMessage(format(Sentences.playerConnect, { player: playerInfo.name }));
+        }
+
+        
     }
 
     /**

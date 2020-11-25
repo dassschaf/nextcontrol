@@ -10,6 +10,7 @@
  */
 import gbxremote from 'gbxremote';
 import mongodb from 'mongodb';
+import beautify from 'json-beautify';
 
 /**
  * Other imports
@@ -22,6 +23,8 @@ import { DatabaseWrapper } from './lib/dbwrapper.js';
 import { Settings } from './settings.js';
 import { Sentences } from './lib/sentences.js';
 import { getPluginList } from './plugins.js'
+import { TMX } from './lib/tmx.js'
+
 
 /**
  * Main class containing the controller's brain
@@ -127,17 +130,38 @@ export class NextControl {
     async startListening() {
         if (!this.isReady) return false
 
+        // initialize status object
+        this.status = new Classes.Status();
+        await this.status.init(this);
+
+        // TODO: add debug switch to not clutter console.
+        console.log(beautify(this.status, null, 2));
+        
+        // start actually listening
         this.client.on('callback', async (method, para) => {
             let p;
             switch (method) {
                 case 'ManiaPlanet.PlayerConnect':
-                    p = new CallbackParams.PlayerConnect(para);
-                    this.plugins.forEach(plugin => { if (typeof plugin.onPlayerConnect != "undefined")  plugin.onPlayerConnect(p, this) });
+                    let login = para[0];
+                    p = new Classes.PlayerInfo(await this.client.query('GetPlayerInfo', [login, 1]));
+
+                    // add player to status
+                    this.status.addPlayer(p);
+
+                    // compability:
+                    p.isSpectator = para[1];                    
+
+                    // start player connect handlers
+                    this.plugins.forEach(plugin => { if (typeof plugin.onPlayerConnect != "undefined")  plugin.onPlayerConnect(p, this) });      
                     break;
         
                 case 'ManiaPlanet.PlayerDisconnect':
                     p = new CallbackParams.PlayerDisconnect(para);
+                    // start player disconnect handlers
                     this.plugins.forEach(plugin => { if (typeof plugin.onPlayerDisconnect != "undefined")  plugin.onPlayerDisconnect(p, this) });
+
+                    // remove player from status
+                    this.status.removePlayer(p.login);
                     break;
         
                 case 'ManiaPlanet.PlayerChat':
@@ -200,6 +224,21 @@ export class NextControl {
         
                 case 'ManiaPlanet.BeginMap':
                     p = Classes.Map.fromCallback(para);
+
+                    if (this.database.collection('maps').countDocuments({uid : p.uid}) > 0)
+                        p = await this.database.collection('maps').findOne({uid : p.uid});
+
+                    else {
+                        // find TMX id
+                        p.setTMXId(await TMX.getID(p.uid));
+
+                        // update database entry
+                        await this.database.collection('maps').insertOne(p);
+                    }
+
+                    // update status:
+                    
+
                     this.plugins.forEach(plugin => { if (typeof plugin.onBeginMap != "undefined") plugin.onBeginMap(p, this) });
                     break;
         

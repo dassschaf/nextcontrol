@@ -32,10 +32,11 @@ export class AdminSuite {
 
     /**
      * Constructor, registering the chat commands at the main class upon plugin loading
-     * @param {NextControl} nextcontrol The script's brain we require to properly register the chat commands
+     * @param {NextControl} nc The script's brain we require to properly register the chat commands
      */
     constructor(nextcontrol) {
         nextcontrol.registerAdminCommand(new Classes.ChatCommand('rescantmxid', this.admin_rescantmxid, 'rescans tmx id of track', this.name));
+        nextcontrol.registerAdminCommand(new Classes.ChatCommand('restart', this.admin_restart, 'Restarts the current track immediately', this.name));
     }
 
     /**
@@ -52,6 +53,20 @@ export class AdminSuite {
         await nc.database.collection('maps').updateOne({uid: map.uid}, {$set: map}, {upsert: true});
     }
 
+    /**
+     * Function making the current track being restarted
+     * @param {Classes.ChatCommandParameters} params 
+     * @param {NextControl} nc 
+     */
+    admin_restart(params, nc) {
+        // get title and player name
+        
+
+        nc.client.query('RestartMap').then(res => {
+            nc.clientWrapper.chatSendServerMessage()
+        });
+
+    }
 
 
     /**

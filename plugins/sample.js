@@ -68,29 +68,30 @@ export class SamplePlugin {
 
     /**
      * Hello World chat command!
-     * @param {Classes.ChatCommandParameters} params parameters
+     * @param {String} login Login of the player calling this command
+     * @param {Array<String>} params Parameters passed by the player after the command (seperated by space)
      * @param {NextControl} nextcontrol main class instance
      */
-    async commandHelloWorld(params, nextcontrol) {
-        nextcontrol.clientWrapper.chatSendServerMessageToLogin('$f00Hello World!', params.login);
+    async commandHelloWorld(login, params, nextcontrol) {
+        nextcontrol.clientWrapper.chatSendServerMessageToLogin('$f00Hello World!', login);
     }
 
     /**
      * Hello World chat command for admins!
-     * @param {Classes.ChatCommandParameters} params parameters
+     * @param {String} login Login of the player calling this command
+     * @param {Array<String>} params Parameters passed by the player after the command (seperated by space)
      * @param {NextControl} nextcontrol main class instance
      */
-    async commandAdminHelloWorld(params, nextcontrol) {
+    async commandAdminHelloWorld(login, params, nextcontrol) {
         nextcontrol.clientWrapper.chatSendServerMessageToLogin('$f0fHello World!', params.login);
     }
 
     /**
-     * Function run, when a player finishes
-     * @param {string} login 
-     * @param {number} time 
+     * Function run, whenever a player passes a waypoint (finish, multilap, checkpoint, ...)
+     * @param {Classes.WaypointInfo} waypointInfo
      * @param {NextControl} nextcontrol 
      */
-    async onPlayerFinish(login, time, nextcontrol) {
+    async onWaypoint(waypointInfo, nextcontrol) {
 
     }
 
@@ -107,19 +108,21 @@ export class SamplePlugin {
     /**
      * Function run, when a player sends a chat message or command
      * DO NOT use this for handling commands, those are supposed to be registered at the main class
-     * @param {CallbackParams.ChatMessage} params Callback parameters
+     * @param {String} login Player's login
+     * @param {String} text Message text
      * @param {NextControl} nextcontrol main class instance
      */
-    async onChat(params, nextcontrol) {
+    async onChat(login, text, nextcontrol) {
 
     }
 
     /**
-     * Function run, when a player disconnects the server
-     * @param {CallbackParams.PlayerDisconnect} params Callback parameters
-     * @param {NextControl} nextcontrol main class instance
+     * Function run, when a player disconnects
+     * @param {Classes.PlayerInfo} player Playerinfo of leaving player 
+     * @param {String} reason Reason for disconnection
+     * @param {NextControl} nextcontrol main object
      */
-    async onPlayerDisconnect(params, nextcontrol) {
+    async onPlayerDisconnect(player, reason, nextcontrol) {
 
     }
 

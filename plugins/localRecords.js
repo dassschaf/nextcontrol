@@ -112,22 +112,31 @@ export class LocalRecords {
     } 
 
     /**
+     * Function run, whenever a player passes a waypoint (finish, multilap, checkpoint, ...)
+     * @param {Classes.WaypointInfo} waypointInfo
+     * @param {NextControl} nextcontrol 
+     */
+    async onWaypoint(waypointInfo, nextcontrol) {
+
+        if (waypointInfo.isEndRace == true) this.onFinish(waypointInfo.login, waypointInfo.raceTime, nextcontrol);
+
+    }
+
+    /**
      * Function run, when a player passes the finish line and finishes their run
-     * @param {CallbackParams.PlayerFinish} params Callback params
+     * @param {String} login
+     * @param {Number} timeOrScore
      * @param {NextControl} nextcontrol main class instance
      */
-    async onFinish(params, nextcontrol) {
+    async onFinish(login, timeOrScore, nextcontrol) {
 
-        if (params.timeOrScore == 0) return; // bail out, if there's no finish time
-
-        let uid = nextcontrol.status.map.uid,
-            login = params.login;
+        let uid = nextcontrol.status.map.uid;
 
         // get current local record and determine whether improvement
         if (await nextcontrol.database.collection('records').countDocuments({ uid: uid, login: login }) < 1) {
             // no record exists yet
             // insert new record document
-            let rec = new Classes.LocalRecord(login, params.timeOrScore, uid);
+            let rec = new Classes.LocalRecord(login, timeOrScore, uid);
 
             await nextcontrol.database.collection('records').insertOne(rec);
 
@@ -145,7 +154,7 @@ export class LocalRecords {
             let currentRecord = await nextcontrol.database.collection('records').findOne({ uid: uid, login: login });
 
             // if improvement, update record and determine position
-            if (currentRecord.time > params.timeOrScore) { 
+            if (currentRecord.time > timeOrScore) { 
                 // improvement!
 
                 // save new new time to database
@@ -161,7 +170,7 @@ export class LocalRecords {
                 await nextcontrol.client.query('ChatSendServerMessage', [msg]);
                 logger('r', `${stripFormatting(name)} improved to ${pos}. local record (${rec.time}) on ${stripFormatting(nextcontrol.status.map.name)}`);
 
-            } else if (currentRecord.time == params.timeOrScore) {
+            } else if (currentRecord.time == timeOrScore) {
                 let pos = await nextcontrol.database.collection('records').countDocuments({uid: uid, time: {$lt: rec.time}}),
                     name = nextcontrol.status.getPlayer(login).name;
 
@@ -170,7 +179,7 @@ export class LocalRecords {
                 await nextcontrol.client.query('ChatSendServerMessage', [msg]);
                 logger('r', `${stripFormatting(name)} equalled their ${pos}. local record (${rec.time}) on ${stripFormatting(nextcontrol.status.map.name)}`);
 
-            } // else: currentRecord.time < params.timeOrScore, no improvement, ignore this
+            } // else: currentRecord.time < timeOrScore, no improvement, ignore this
         }
         // else, ignore.
     }

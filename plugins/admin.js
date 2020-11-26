@@ -35,16 +35,17 @@ export class AdminSuite {
      * @param {NextControl} nc The script's brain we require to properly register the chat commands
      */
     constructor(nextcontrol) {
-        nextcontrol.registerAdminCommand(new Classes.ChatCommand('rescantmxid', this.admin_rescantmxid, 'rescans tmx id of track', this.name));
+        nextcontrol.registerAdminCommand(new Classes.ChatCommand('rescantrack', this.admin_rescantrack, 'rescans track, to add it to the database', this.name));
         nextcontrol.registerAdminCommand(new Classes.ChatCommand('restart', this.admin_restart, 'Restarts the current track immediately', this.name));
     }
 
     /**
-     * Function dealing 
-     * @param {Classes.ChatCommandParameters} para parameters
-     * @param {NextControl} nc main class instance
+     * Rescans the track, to add and update it to the database
+     * @param {String} login login of the calling player 
+     * @param {Array<String>} params parameters of the call
+     * @param {NextControl} nc 
      */
-    async admin_rescantmxid(para, nc) {
+    admin_rescantrack(login, params, nc) {
         let map = nc.status.map;
 
         map.tmxid = await TMX.getID(map.uid);
@@ -54,15 +55,16 @@ export class AdminSuite {
 
     /**
      * Function making the current track being restarted
-     * @param {Classes.ChatCommandParameters} params 
+     * @param {String} login login of the calling player 
+     * @param {Array<String>} params parameters of the call
      * @param {NextControl} nc 
      */
-    admin_restart(params, nc) {
+    admin_restart(login, params, nc) {
         // get title and player name
-        
+        let name = nc.status.getPlayer(login).name;
 
         nc.client.query('RestartMap').then(res => {
-            nc.clientWrapper.chatSendServerMessage()
+            nc.clientWrapper.chatSendServerMessage(format(Sentences.admin.restart, {name: name}));
         });
 
     }

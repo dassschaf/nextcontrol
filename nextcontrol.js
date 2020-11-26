@@ -151,10 +151,12 @@ export class NextControl {
                 case 'Trackmania.Event.WayPoint':
                     p = new Classes.WaypointInfo(p);
 
+                    this.plugins.forEach(plugin => { if (typeof plugin.onPlayerConnect != "undefined") plugin.onWaypoint(p, this); })
+
                     break;
 
                 case 'ManiaPlanet.PlayerConnect':
-                    let login = para[0];
+                    let login = String(para[0]);
                     p = new Classes.PlayerInfo(await this.client.query('GetPlayerInfo', [login, 1]));
 
                     // add player to status
@@ -168,8 +170,8 @@ export class NextControl {
                     break;
         
                 case 'ManiaPlanet.PlayerDisconnect':
-                    let player = this.status.getPlayer(para[0]),
-                        reason = para[1];
+                    let player = this.status.getPlayer(String(para[0])),
+                        reason = String(para[1]);
                     // start player disconnect handlers
                     this.plugins.forEach(plugin => { if (typeof plugin.onPlayerDisconnect != "undefined")  plugin.onPlayerDisconnect(player, reason, this) });
 
@@ -178,15 +180,14 @@ export class NextControl {
                     break;
         
                 case 'ManiaPlanet.PlayerChat':
-                    p = new CallbackParams.ChatMessage(para);
+                    let login = String(para[1]),
+                        text = String(para[2]),
+                        isCommand = Boolean(para[3]);
         
-                    // two quick and dirty debug commands:
-                    if (p.text == '/shutdown' && Settings.admins.includes(p.login)) { await this.clientWrapper.chatSendServerMessage(Sentences.shuttingDown); logger('w', 'Shutting down after admin invoked "/shutdown" command'); process.exit(0); }
-
                     // chat command handling
-                    if (p.isCommand) {
+                    if (isCommand) {
 
-                        let splitCommand = p.text.split('/')[1].split(' '),
+                        let splitCommand = text.split('/')[1].split(' '),
                             command = splitCommand.shift(),
                             params = splitCommand.join(' ');
 
@@ -194,22 +195,22 @@ export class NextControl {
                         if (command == 'admin') {
                             // handle admin command, command is "first" parameter
 
-                            if (!Settings.admins.includes(p.login)) {
+                            if (!Settings.admins.includes(login)) {
                                 // player is not admin!
-                                logger('r', p.login + ' tried using admin command /' + adminCommand + ', but is no admin!');
-                                this.clientWrapper.chatSendServerMessageToLogin(Sentences.playerNotAdmin, p.login);
+                                logger('r', login + ' tried using admin command /' + adminCommand + ', but is no admin!');
+                                this.clientWrapper.chatSendServerMessageToLogin(Sentences.playerNotAdmin, login);
                             }
                             
                             let splitAdminCommand = params.split(' '),
                                 adminCommand = splitAdminCommand.shift(),
                                 adminParams = splitAdminCommand.join(' ');
 
-                            logger('r', p.login + ' used admin command /' + adminCommand + ' with parameters: ' + adminParams);
+                            logger('r', login + ' used admin command /' + adminCommand + ' with parameters: ' + adminParams);
 
                             this.adminCommands.forEach(commandDefinition => {
                                 if (commandDefinition.commandName === adminCommand) 
                                     commandDefinition.commandHandler(
-                                        new Classes.ChatCommandParameters(p.playerUid, p.login, adminParams),
+                                        login, adminParams,
                                         this
                                     );
                             });
@@ -217,12 +218,12 @@ export class NextControl {
                         
                         else {
                             // handle regular command
-                            logger('r', p.login + ' used command /' + command + ' with parameters: ' + params);
+                            logger('r', login + ' used command /' + command + ' with parameters: ' + params);
 
                             this.chatCommands.forEach(commandDefinition => {
                                 if (commandDefinition.commandName === command)
                                     commandDefinition.commandHandler(
-                                        new Classes.ChatCommandParameters(p.playerUid, p.login, params),
+                                        login, params,
                                         this
                                     );
                             });
@@ -230,7 +231,7 @@ export class NextControl {
                     }
 
                     // regular onChat function        
-                    this.plugins.forEach(plugin => { if (typeof plugin.onChat != "undefined") plugin.onChat(p, this) });
+                    this.plugins.forEach(plugin => { if (typeof plugin.onChat != "undefined") plugin.onChat(login, text, this) });
                     break;
         
                 case 'ManiaPlanet.BeginMap':
@@ -328,29 +329,29 @@ export class NextControl {
 
     /**
      * Registers a chat command to be used later
-     * @param {Classes.ChatCommand} commandDefinition 
+     * @param {Classes.ChatCommand} comm 
      */
-    registerChatCommand(commandDefinition) {
+    registerChatCommand(comm) {
 
         // no custom admin command allowed
-        if (commandDefinition.name == 'admin') { logger('w', `A chat command from plugin ${commandDefinition.pluginName} attempted to register itself as /admin, fix the plugin or contact the plugin's developer.`); return; }            
+        if (comm.name == 'admin') { logger('w', `A chat command from plugin ${comm.pluginName} attempted to register itself as /admin, fix the plugin or contact the plugin's developer.`); return; }            
            
         // faulty command definition
-        if (commandDefinition.commandName == undefined || commandDefinition.commandHandler == undefined || commandDefinition.commandDescription == undefined || commandDefinition.commandName == '' || commandDefinition.commandDescription == '') { logger('w', `Chat command ${commandDefinition.toString()} from plugin ${commandDefinition.pluginName} has an invalid command definition lacking name, a handler function or a description, fix the plugin or contact the plugin's developer.`); return; }
+        if (comm.commandName == undefined || comm.commandHandler == undefined || comm.commandDescription == undefined || comm.commandName == '' || comm.commandDescription == '') { logger('w', `Chat command ${comm.toString()} from plugin ${comm.pluginName} has an invalid command definition lacking name, a handler function or a description, fix the plugin or contact the plugin's developer.`); return; }
 
-        this.chatCommands.push(commandDefinition);
+        this.chatCommands.push(comm);
     }
 
     /**
      * Registers a chat command to be used
-     * @param {Classes.ChatCommand} commandDefinition 
+     * @param {Classes.ChatCommand} comm 
      */
-    registerAdminCommand(commandDefinition) { 
+    registerAdminCommand(comm) { 
 
         // faulty command definition
-        if (commandDefinition.commandName == undefined || commandDefinition.commandHandler == undefined || commandDefinition.commandDescription == undefined || commandDefinition.commandName == '' || commandDefinition.commandDescription == '') { logger('w', `Chat command ${commandDefinition.toString()} from plugin ${commandDefinition.pluginName} has an invalid command definition lacking name, a handler function or a description, fix the plugin or contact the plugin's developer.`); return; }
+        if (comm.commandName == undefined || comm.commandHandler == undefined || comm.commandDescription == undefined || comm.commandName == '' || comm.commandDescription == '') { logger('w', `Chat command ${comm.toString()} from plugin ${comm.pluginName} has an invalid command definition lacking name, a handler function or a description, fix the plugin or contact the plugin's developer.`); return; }
 
-        this.adminCommands.push(commandDefinition);
+        this.adminCommands.push(comm);
         
     }
 

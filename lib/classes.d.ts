@@ -2,31 +2,7 @@
  *  NextControl library of commonly used classes
  *  Type Definitions file
  */
-
-import { ClientWrapper } from "./clientwrapper.js"
-import { DatabaseWrapper } from './dbwrapper.js'
-import { Server } from "mongodb";
 import { NextControl } from "../nextcontrol.js";
-
-
-export class WrapperList {
-    /**
-     * constructs the wrapper list
-     * @param client Client wrapper object
-     * @param database DatabaseWrapper object
-     */
-    constructor (client : ClientWrapper, database : DatabaseWrapper)
-
-    /**
-     * Client wrapper object
-     */
-    client      : ClientWrapper;
-
-    /**
-     * Database wrapper object
-     */
-    database    : DatabaseWrapper;
-}
 
 /**
  * Game Server Version information
@@ -483,4 +459,96 @@ export class Status {
      * Gamemode settings
      */
     modeScriptSettings : Object
+}
+
+/**
+ * Class representing the information sent by the mode script, when a waypoint is passed by a player
+ */
+export class WaypointInfo {
+
+    /**
+     * Constructs an object from the callback parameter struct
+     * @param {*} para 
+     */
+    constructor(para) 
+
+    /**
+     * Overall time
+     */
+    time : Number
+
+    /**
+     * Player's login
+     */
+    login : String
+
+    /**
+     * Player's account ID
+     */
+    accountId : String
+
+    /**
+     * Time (in ms) since run start
+     */
+    raceTime : Number
+
+    /**
+     * Time (in ms) for the current lap
+     */
+    lapTime : Number
+
+    /**
+     * Number of the currently passed checkpoint in the current race
+     */
+    nbCheckpointInRace : Number 
+
+    /**
+     * Number of the currently passed checkpoint in the current lap
+     */
+    nbCheckpointInLap : Number
+
+    /**
+     * Is the current waypoint the finish?
+     */
+    isEndRace : Boolean
+
+    /**
+     * Is teh current waypoint the finish to end the current lap?
+     */
+    isEndLap : Boolean
+
+    /**
+     * Is the match set up to have infinite laps driven?
+     */
+    isInfiniteLaps : Boolean
+
+    /**
+     * Is the match set up to have each lap count as a finished run?
+     */
+    isIndependentLaps : Boolean
+
+    /**
+     * Block ID in the map file of the current waypoint
+     */
+    blockId : String
+
+    /**
+     * car speed in m/s
+     */
+    speed : Number
+
+    /**
+     * Is the current waypoint a trespassed and triggered finish?
+     */
+    isFinish() : Boolean
+
+    /**
+     * Is the current waypoint a trespassed and triggered checkpoint?
+     */
+    isCheckpint() : Boolean
+
+    /**
+     * Is the current checkpoint a trespassed finish to finish a lap?
+     */
+    isLap() : Boolean
 }

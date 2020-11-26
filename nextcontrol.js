@@ -149,10 +149,7 @@ export class NextControl {
 
             switch (method) {
                 case 'Trackmania.Event.WayPoint':
-                    if (p.isendrace == true) // <- finish
-                        this.plugins.forEach(plugin => { if (typeof plugin.onPlayerConnect != "undefined")  plugin.onPlayerFinish(p.login, p.racetime, this)});
-
-                    else (p.isendrace != true)
+                    p = new Classes.WaypointInfo(p);
 
                     break;
 
@@ -163,8 +160,8 @@ export class NextControl {
                     // add player to status
                     this.status.addPlayer(p);
 
-                    // compability:
-                    p.isSpectator = para[1];                    
+                    //get variables right for handlers
+                    let isSpectator = Boolean(para[1]);                    
 
                     // start player connect handlers
                     this.plugins.forEach(plugin => { if (typeof plugin.onPlayerConnect != "undefined")  plugin.onPlayerConnect(p, isSpectator, this) });      
@@ -185,8 +182,6 @@ export class NextControl {
         
                     // two quick and dirty debug commands:
                     if (p.text == '/shutdown' && Settings.admins.includes(p.login)) { await this.clientWrapper.chatSendServerMessage(Sentences.shuttingDown); logger('w', 'Shutting down after admin invoked "/shutdown" command'); process.exit(0); }
-
-                    if (p.text == '/logline' && Settings.admins.includes(p.login))  logger('-----------');
 
                     // chat command handling
                     if (p.isCommand) {
@@ -358,7 +353,7 @@ export class NextControl {
         this.adminCommands.push(commandDefinition);
         
     }
-    
+
 }
 
 let nc = new NextControl();

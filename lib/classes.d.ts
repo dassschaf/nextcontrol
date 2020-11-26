@@ -545,7 +545,7 @@ export class WaypointInfo {
     /**
      * Is the current waypoint a trespassed and triggered checkpoint?
      */
-    isCheckpint() : Boolean
+    isCheckpoint() : Boolean
 
     /**
      * Is the current checkpoint a trespassed finish to finish a lap?

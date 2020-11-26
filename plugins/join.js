@@ -34,12 +34,11 @@ export class Join {
             logger('r','Admin ' + stripFormatting(playerInfo.name) + ' has joined the server');
             nextcontrol.clientWrapper.chatSendServerMessage(format(Sentences.adminConnect, { player: playerInfo.name }));
         }
+
         else {
             logger('r', stripFormatting(playerInfo.name) + ' has joined the server');
             nextcontrol.clientWrapper.chatSendServerMessage(format(Sentences.playerConnect, { player: playerInfo.name }));
-        }
-
-        
+        }        
     }
 
     /**

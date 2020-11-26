@@ -279,11 +279,6 @@ export class NextControl {
                     this.plugins.forEach(plugin => { if (typeof plugin.onMaplistChange != "undefined") plugin.onMaplistChange(p, this) });
                     break;
         
-                case 'ManiaPlanet.ModeScriptCallbackArray':
-                    p = new CallbackParams.ModeScriptCallback(para);
-                    this.plugins.forEach(plugin => { if (typeof plugin.onModeScriptCallback != "undefined") plugin.onModeScriptCallback(p, this) });
-                    break;
-        
                 case 'ManiaPlanet.PlayerAlliesChanged':
                     p = para[0]; // = player login
                     this.plugins.forEach(plugin => { if (typeof plugin.onPlayersAlliesChange != "undefined") plugin.onPlayersAlliesChange(p, this) });
@@ -312,11 +307,6 @@ export class NextControl {
                 case 'ManiaPlanet.VoteUpdated':
                     p = Classes.CallVote.fromCallback(para);
                     this.plugins.forEach(plugin => { if (typeof plugin.onVoteUpdate != "undefined") plugin.onVoteUpdate(p, this) });
-                    break;
-        
-                case 'TrackMania.PlayerCheckpoint':
-                    p = new CallbackParams.PlayerCheckpoint(para);
-                    this.plugins.forEach(plugin => { if (typeof plugin.onCheckpoint != "undefined") plugin.onCheckpoint(p, this) });
                     break;
         
                 case 'TrackMania.PlayerIncoherence':

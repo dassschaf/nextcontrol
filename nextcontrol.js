@@ -56,6 +56,7 @@ export class NextControl {
                 if (!(await client.query('SetApiVersion', ['2019-03-02']))) reject('api');
                 if (!(await client.query('Authenticate', [Settings.trackmania.login, Settings.trackmania.password]))) reject('auth');
                 if (!(await client.query('EnableCallbacks', [true]))) reject('callback');
+                if (!(await client.query('TriggerModeScriptEventArray', ['XmlRpc.EnableCallbacks', ['true']]))) reject('script');
 
                 // and "return" the functioning client object
                 resolve(client);
@@ -133,14 +134,28 @@ export class NextControl {
         // initialize status object
         this.status = new Classes.Status();
         await this.status.init(this);
-
-        // TODO: add debug switch to not clutter console.
-        //console.log(beautify(this.status, null, 2));
         
         // start actually listening
         this.client.on('callback', async (method, para) => {
             let p;
+
+            // we need to catch callbacks from the gamemode script beforehand, to properly get along with them
+            if (method === 'ManiaPlanet.ModeScriptCallbackArray') {
+                method = para.shift();
+                p = JSON.parse(para[0][0]);
+            }
+            
+            console.log(JSON.stringify({method: method, para: para}, null, 2));
+
             switch (method) {
+                case 'Trackmania.Event.WayPoint':
+                    if (p.isendrace == true) // <- finish
+                        this.plugins.forEach(plugin => { if (typeof plugin.onPlayerConnect != "undefined")  plugin.onPlayerFinish(p.login, p.racetime, this)});
+
+                    else (p.isendrace != true)
+
+                    break;
+
                 case 'ManiaPlanet.PlayerConnect':
                     let login = para[0];
                     p = new Classes.PlayerInfo(await this.client.query('GetPlayerInfo', [login, 1]));
@@ -152,13 +167,14 @@ export class NextControl {
                     p.isSpectator = para[1];                    
 
                     // start player connect handlers
-                    this.plugins.forEach(plugin => { if (typeof plugin.onPlayerConnect != "undefined")  plugin.onPlayerConnect(p, this) });      
+                    this.plugins.forEach(plugin => { if (typeof plugin.onPlayerConnect != "undefined")  plugin.onPlayerConnect(p, isSpectator, this) });      
                     break;
         
                 case 'ManiaPlanet.PlayerDisconnect':
-                    p = new CallbackParams.PlayerDisconnect(para);
+                    let player = this.status.getPlayer(para[0]),
+                        reason = para[1];
                     // start player disconnect handlers
-                    this.plugins.forEach(plugin => { if (typeof plugin.onPlayerDisconnect != "undefined")  plugin.onPlayerDisconnect(p, this) });
+                    this.plugins.forEach(plugin => { if (typeof plugin.onPlayerDisconnect != "undefined")  plugin.onPlayerDisconnect(player, reason, this) });
 
                     // remove player from status
                     this.status.removePlayer(p.login);
@@ -267,7 +283,6 @@ export class NextControl {
                     this.plugins.forEach(plugin => { if (typeof plugin.onMaplistChange != "undefined") plugin.onMaplistChange(p, this) });
                     break;
         
-                case 'ManiaPlanet.ModeScriptCallback':
                 case 'ManiaPlanet.ModeScriptCallbackArray':
                     p = new CallbackParams.ModeScriptCallback(para);
                     this.plugins.forEach(plugin => { if (typeof plugin.onModeScriptCallback != "undefined") plugin.onModeScriptCallback(p, this) });
@@ -306,12 +321,6 @@ export class NextControl {
                 case 'TrackMania.PlayerCheckpoint':
                     p = new CallbackParams.PlayerCheckpoint(para);
                     this.plugins.forEach(plugin => { if (typeof plugin.onCheckpoint != "undefined") plugin.onCheckpoint(p, this) });
-                    break;
-        
-        
-                case 'TrackMania.PlayerFinish':
-                    p = new CallbackParams.PlayerFinish(para);
-                    this.plugins.forEach(plugin => { if (typeof plugin.onFinish != "undefined") plugin.onFinish(p, this) });
                     break;
         
                 case 'TrackMania.PlayerIncoherence':

@@ -459,6 +459,12 @@ export class Status {
     addPlayer(player) : void
 
     /**
+     * Returns a player from the list, based on the player's login
+     * @param player player login
+     */
+    getPlayer(player) : PlayerInfo
+
+    /**
      * Returns, whether the current mode script supports time extension or not.
      */
     isTimeExtendable() : Boolean

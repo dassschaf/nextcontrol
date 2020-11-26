@@ -56,10 +56,11 @@ export class AdminSuite {
 
     /**
      * Function run, when a player joins the server
-     * @param {CallbackParams.PlayerConnect} params Callback parameters
+     * @param {Classes.PlayerInfo} player Player info
+     * @param {Boolean} isSpectator whether player spectates or not
      * @param {NextControl} nextcontrol main class instance
      */
-    async onPlayerConnect(params, nextcontrol) {
+    async onPlayerConnect(player, isSpectator, nextcontrol) { 
 
     }
 

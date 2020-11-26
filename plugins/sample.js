@@ -85,11 +85,22 @@ export class SamplePlugin {
     }
 
     /**
+     * Function run, when a player finishes
+     * @param {string} login 
+     * @param {number} time 
+     * @param {NextControl} nextcontrol 
+     */
+    async onPlayerFinish(login, time, nextcontrol) {
+
+    }
+
+    /**
      * Function run, when a player joins the server
-     * @param {Classes.PlayerInfo} params Player Info
+     * @param {Classes.PlayerInfo} player Player info
+     * @param {Boolean} isSpectator whether player spectates or not
      * @param {NextControl} nextcontrol main class instance
      */
-    async onPlayerConnect(params, nextcontrol) {
+    async onPlayerConnect(player, isSpectator, nextcontrol) { 
 
     }
 
@@ -234,15 +245,6 @@ export class SamplePlugin {
      * @param {NextControl} nextcontrol main class instance
      */
     async onCheckpoint(params, nextcontrol) {
-
-    }
-
-    /**
-     * Function run, when a player passes the finish line and finishes their run
-     * @param {CallbackParams.PlayerFinish} params Callback params
-     * @param {NextControl} nextcontrol main class instance
-     */
-    async onFinish(params, nextcontrol) {
 
     }
 

@@ -22,18 +22,13 @@ export class Join {
 
     /**
      * Function run, when a player joins the server
-     * @param {Classes.PlayerInfo} params Player Info
+     * @param {Classes.PlayerInfo} player Player info
+     * @param {Boolean} isSpectator whether player spectates or not
      * @param {NextControl} nextcontrol main class instance
      */
-    async onPlayerConnect(params, nextcontrol) {
+    async onPlayerConnect(player, isSpectator, nextcontrol) {                    
         
-        let serverPlayerInfo = await nextcontrol.databaseWrapper.getPlayerInfo(params.login),
-            playerInfo = await nextcontrol.databaseWrapper.getPlayerInfo(params.login);
-
-        if (playerInfo == null || serverPlayerInfo.login != playerInfo.login)
-            playerInfo = serverPlayerInfo;                       
-        
-        nextcontrol.databaseWrapper.updatePlayerInfo(playerInfo);
+        nextcontrol.databaseWrapper.updatePlayerInfo(player);
 
         if (Settings.admins.includes(params.login)) {
             logger('r','Admin ' + stripFormatting(playerInfo.name) + ' has joined the server');
@@ -48,17 +43,13 @@ export class Join {
     }
 
     /**
-     * Function run, when a player disconnects the server
-     * @param {CallbackParams.PlayerDisconnect} params Callback parameters
-     * @param {NextControl} nextcontrol main class instance
+     * Function run, when a player disconnects
+     * @param {Classes.PlayerInfo} player Playerinfo of leaving player 
+     * @param {String} reason Reason for disconnection
+     * @param {NextControl} nextcontrol main object
      */
-    async onPlayerDisconnect(params, nextcontrol) {
-        let playerInfo = await nextcontrol.database.collection('players').findOne({ login: params.login });
-
-        if (playerInfo.login == undefined) // if player is for some reason unknown to database:
-            playerInfo = {name: 'unknown', login: 'unknown'};
-
-        logger('r', stripFormatting(playerInfo.name) + ' has left the server');
-        nextcontrol.clientWrapper.chatSendServerMessage(format(Sentences.playerDisconnect, { player: playerInfo.name }));
+    async onPlayerDisconnect(player, reason, nextcontrol) {
+        logger('r', stripFormatting(player.name) + ' has left the server, reason: ' + reason);
+        nextcontrol.clientWrapper.chatSendServerMessage(format(Sentences.playerDisconnect, { player: player.name }));
     }
 }

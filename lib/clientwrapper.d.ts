@@ -54,4 +54,9 @@ export class ClientWrapper {
      * @param logins array of player logins
      */
     async chatSendServerMessageToLogins(text : string, logins : Array<string>) : void 
+
+    /**
+     * Returns the current's map's information object
+     */
+    async getCurrentMapInfo() : Classes.Map
 }

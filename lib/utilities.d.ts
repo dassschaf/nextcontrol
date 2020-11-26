@@ -18,9 +18,9 @@ export function logger(text : string) : void
 /**
  * Formatting aid for the sentence bank
  * @param sentence Sentence from the sentence bank containing placeholders
- * @param fillings Array of strings to replace the placeholders (%1% => fillings[0], %2% => fillings[1], ...)
+ * @param fillings Object containing the placeholders by the placeholder key: { player: "dassschaf", pos: "1", score: "100" }
  */
-export function format(sentence : string, fillings : Array<string>) : string
+export function format(sentence : string, fillings : any) : string
 
 /**
  * Removes all $-formatting from a string

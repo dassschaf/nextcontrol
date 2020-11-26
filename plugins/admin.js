@@ -8,6 +8,7 @@ import { DatabaseWrapper } from '../lib/dbwrapper.js'
 import * as CallbackParams from '../lib/callbackparams.js'
 import * as Classes from '../lib/classes.js'
 import { NextControl } from '../nextcontrol.js'
+import { TMX } from '../lib/tmx.js'
 
 /**
  * Plugin containing the most necessary administration commands and features
@@ -33,12 +34,23 @@ export class AdminSuite {
      * Constructor, registering the chat commands at the main class upon plugin loading
      * @param {NextControl} nc The script's brain we require to properly register the chat commands
      */
-    constructor(nc) {
+    constructor(nextcontrol) {
+        nextcontrol.registerAdminCommand(new Classes.ChatCommand('rescantmxid', this.admin_rescantmxid, 'rescans tmx id of track', this.name));
+        nextcontrol.registerAdminCommand(new Classes.ChatCommand('restart', this.admin_restart, 'Restarts the current track immediately', this.name));
+    }
 
-        // register /admin restart
-        nc.registerAdminCommand(new Classes.ChatCommand('restart', this.adminRestart, 'Restarts the current track.'));
+    /**
+     * Function dealing 
+     * @param {Classes.ChatCommandParameters} para parameters
+     * @param {NextControl} nc main class instance
+     */
+    async admin_rescantmxid(para, nc) {
 
+        let map = nc.status.map;
 
+        map.tmxid = await TMX.getID(map.uid);
+
+        await nc.database.collection('maps').updateOne({uid: map.uid}, {$set: map}, {upsert: true});
     }
 
     /**
@@ -46,7 +58,7 @@ export class AdminSuite {
      * @param {Classes.ChatCommandParameters} params 
      * @param {NextControl} nc 
      */
-    adminRestart(params, nc) {
+    admin_restart(params, nc) {
         // get title and player name
         
 
@@ -62,7 +74,7 @@ export class AdminSuite {
      * @param {CallbackParams.PlayerConnect} params Callback parameters
      * @param {NextControl} nextcontrol main class instance
      */
-    onPlayerConnect(params, nextcontrol) {
+    async onPlayerConnect(params, nextcontrol) {
 
     }
 
@@ -72,7 +84,7 @@ export class AdminSuite {
      * @param {CallbackParams.ChatMessage} params Callback parameters
      * @param {NextControl} nextcontrol main class instance
      */
-    onChat(params, nextcontrol) {
+    async onChat(params, nextcontrol) {
 
     }
 
@@ -81,7 +93,7 @@ export class AdminSuite {
      * @param {CallbackParams.PlayerDisconnect} params Callback parameters
      * @param {NextControl} nextcontrol main class instance
      */
-    onPlayerDisconnect(params, nextcontrol) {
+    async onPlayerDisconnect(params, nextcontrol) {
 
     }
 
@@ -90,7 +102,7 @@ export class AdminSuite {
      * @param {Classes.Map} params Callback parameters
      * @param {NextControl} nextcontrol main class instance
      */
-    onBeginMap(params, nextcontrol) {
+    async onBeginMap(params, nextcontrol) {
 
     }
 
@@ -98,7 +110,7 @@ export class AdminSuite {
      * Function run, when a new match begins
      * @param {NextControl} nextcontrol main class instance
      */
-    onBeginMatch(nextcontrol) {
+    async onBeginMatch(nextcontrol) {
 
     }
 
@@ -107,7 +119,7 @@ export class AdminSuite {
      * @param {CallbackParams.UpdatedBill} params Callback parameters
      * @param {NextControl} nextcontrol main class instance
      */
-    onBillUpdate(params, nextcontrol) {
+    async onBillUpdate(params, nextcontrol) {
 
     }
 
@@ -116,7 +128,7 @@ export class AdminSuite {
      * @param {Classes.Map} params Callback parameters
      * @param {NextControl} nextcontrol main class instance
      */
-    onEndMap(params, nextcontrol) {
+    async onEndMap(params, nextcontrol) {
 
     }
 
@@ -125,7 +137,7 @@ export class AdminSuite {
      * @param {CallbackParams.MatchResults} params Callback parameters
      * @param {NextControl} nextcontrol main class instance
      */
-    onEndMatch(params, nextcontrol) {
+    async onEndMatch(params, nextcontrol) {
 
     }
 
@@ -134,7 +146,7 @@ export class AdminSuite {
      * @param {CallbackParams.MaplistChange} params Callback parameters
      * @param {NextControl} nextcontrol main class instance
      */
-    onMaplistChange(params, nextcontrol) {
+    async onMaplistChange(params, nextcontrol) {
 
     }
 
@@ -143,7 +155,7 @@ export class AdminSuite {
      * @param {CallbackParams.ModeScriptCallback} params Callback parameters
      * @param {NextControl} nextcontrol main class instance
      */
-    onModeScriptCallback(params, nextcontrol) {
+    async onModeScriptCallback(params, nextcontrol) {
 
     }
 
@@ -152,7 +164,7 @@ export class AdminSuite {
      * @param {string} login Player's login
      * @param {NextControl} nextcontrol main class instance
      */
-    onPlayersAlliesChange(login, nextcontrol) {
+    async onPlayersAlliesChange(login, nextcontrol) {
 
     }
 
@@ -161,7 +173,7 @@ export class AdminSuite {
      * @param {Classes.PlayerInfo} params Callback parameters
      * @param {NextControl} nextcontrol main class instance
      */
-    onPlayerInfoChange(params, nextcontrol) {
+    async onPlayerInfoChange(params, nextcontrol) {
 
     }
 
@@ -170,7 +182,7 @@ export class AdminSuite {
      * @param {CallbackParams.ManialinkPageAnswer} params Callback parameters
      * @param {NextControl} nextcontrol main class instance
      */
-    onManialinkPageAnswer(params, nextcontrol) {
+    async onManialinkPageAnswer(params, nextcontrol) {
 
     }
 
@@ -179,7 +191,7 @@ export class AdminSuite {
      * @param {Classes.ServerStatus} params Server Status object
      * @param {NextControl} nextcontrol main class instance
      */
-    onStatusChange(params, nextcontrol) {
+    async onStatusChange(params, nextcontrol) {
         
     }
 
@@ -188,7 +200,7 @@ export class AdminSuite {
      * @param {CallbackParams.TunnelData} params Callback params
      * @param {NextControl} nextcontrol main class instance
      */
-    onTunnelDataRecieved(params, nextcontrol) {
+    async onTunnelDataRecieved(params, nextcontrol) {
 
     }
 
@@ -197,7 +209,7 @@ export class AdminSuite {
      * @param {Classes.CallVote} params Callback params
      * @param {NextControl} nextcontrol main class instance
      */
-    onVoteUpdate(params, nextcontrol) {
+    async onVoteUpdate(params, nextcontrol) {
 
     }    
 
@@ -206,7 +218,7 @@ export class AdminSuite {
      * @param {CallbackParams.PlayerCheckpoint} params Callback params
      * @param {NextControl} nextcontrol main class instance
      */
-    onCheckpoint(params, nextcontrol) {
+    async onCheckpoint(params, nextcontrol) {
 
     }
 
@@ -215,7 +227,7 @@ export class AdminSuite {
      * @param {CallbackParams.PlayerFinish} params Callback params
      * @param {NextControl} nextcontrol main class instance
      */
-    onFinish(params, nextcontrol) {
+    async onFinish(params, nextcontrol) {
 
     }
 
@@ -224,7 +236,7 @@ export class AdminSuite {
      * @param {CallbackParams.PlayerIncoherence} params Callback params
      * @param {NextControl} nextcontrol main class instance
      */
-    onIncoherence(params, nextcontrol) {
+    async onIncoherence(params, nextcontrol) {
 
     }
 

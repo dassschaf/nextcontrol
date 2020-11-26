@@ -22,7 +22,7 @@ export class Join {
 
     /**
      * Function run, when a player joins the server
-     * @param {CallbackParams.PlayerConnect} params Callback parameters
+     * @param {Classes.PlayerInfo} params Player Info
      * @param {NextControl} nextcontrol main class instance
      */
     async onPlayerConnect(params, nextcontrol) {
@@ -31,12 +31,20 @@ export class Join {
             playerInfo = await nextcontrol.databaseWrapper.getPlayerInfo(params.login);
 
         if (playerInfo == null || serverPlayerInfo.login != playerInfo.login)
-            playerInfo = serverPlayerInfo;           
+            playerInfo = serverPlayerInfo;                       
         
         nextcontrol.databaseWrapper.updatePlayerInfo(playerInfo);
 
-        logger('r', stripFormatting(playerInfo.name) + ' has joined the server');
-        nextcontrol.clientWrapper.chatSendServerMessage(format(Sentences.playerConnect, [playerInfo.name]));
+        if (Settings.admins.includes(params.login)) {
+            logger('r','Admin ' + stripFormatting(playerInfo.name) + ' has joined the server');
+            nextcontrol.clientWrapper.chatSendServerMessage(format(Sentences.adminConnect, { player: playerInfo.name }));
+        }
+        else {
+            logger('r', stripFormatting(playerInfo.name) + ' has joined the server');
+            nextcontrol.clientWrapper.chatSendServerMessage(format(Sentences.playerConnect, { player: playerInfo.name }));
+        }
+
+        
     }
 
     /**
@@ -45,12 +53,12 @@ export class Join {
      * @param {NextControl} nextcontrol main class instance
      */
     async onPlayerDisconnect(params, nextcontrol) {
-        let playerInfo = await nextcontrol.databaseWrapper.getPlayerInfo(params.login);
+        let playerInfo = await nextcontrol.database.collection('players').findOne({ login: params.login });
 
         if (playerInfo.login == undefined) // if player is for some reason unknown to database:
             playerInfo = {name: 'unknown', login: 'unknown'};
 
         logger('r', stripFormatting(playerInfo.name) + ' has left the server');
-        nextcontrol.clientWrapper.chatSendServerMessage(format(Sentences.playerDisconnect, [playerInfo.name]));
+        nextcontrol.clientWrapper.chatSendServerMessage(format(Sentences.playerDisconnect, { player: playerInfo.name }));
     }
 }

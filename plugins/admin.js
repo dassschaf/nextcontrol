@@ -31,12 +31,30 @@ export class AdminSuite {
 
     /**
      * Constructor, registering the chat commands at the main class upon plugin loading
-     * @param {NextControl} nextcontrol The script's brain we require to properly register the chat commands
+     * @param {NextControl} nc The script's brain we require to properly register the chat commands
      */
-    constructor(nextcontrol) {
+    constructor(nc) {
+
+        // register /admin restart
+        nc.registerAdminCommand(new Classes.ChatCommand('restart', this.adminRestart, 'Restarts the current track.'));
+
 
     }
 
+    /**
+     * Function making the current track being restarted
+     * @param {Classes.ChatCommandParameters} params 
+     * @param {NextControl} nc 
+     */
+    adminRestart(params, nc) {
+        // get title and player name
+        
+
+        nc.client.query('RestartMap').then(res => {
+            nc.clientWrapper.chatSendServerMessage()
+        });
+
+    }
 
 
     /**

@@ -67,7 +67,7 @@ export class AdminSuite {
         let name = nc.status.getPlayer(login).name;
 
         await nc.client.query('RestartMap');
-        await nc.clientWrapper.chatSendServerMessage(format(Sentences.admin.restart, {name: name}));
+        await nc.client.query('ChatSendServerMessage', [format(Sentences.admin.restart, {name: name})]);
     }
 
     /**
@@ -81,7 +81,7 @@ export class AdminSuite {
         let name = nc.status.getPlayer(login).name;
 
         await nc.client.query('NextMap');
-        await nc.clientWrapper.chatSendServerMessage(format(Sentences.admin.restart, {name: name}));
+        await nnc.client.query('ChatSendServerMessage', [format(Sentences.admin.skip, {name: name})]);
     }
 
     /**

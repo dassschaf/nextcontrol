@@ -27,16 +27,16 @@ export class Join {
      */
     async onPlayerConnect(player, isSpectator, nextcontrol) {                    
         
-        nextcontrol.databaseWrapper.updatePlayerInfo(player);
+        nextcontrol.database.collection('players').updateOne({login: player.login}, {$set: player}, {upsert: true});
 
         if (Settings.admins.includes(player.login)) {
             logger('r','Admin ' + stripFormatting(player.name) + ' has joined the server');
-            nextcontrol.clientWrapper.chatSendServerMessage(format(Sentences.adminConnect, { player: player.name }));
+            nextcontrol.client.query('ChatSendServerMessage', [format(Sentences.adminConnect, { player: player.name })]);
         }
 
         else {
             logger('r', stripFormatting(player.name) + ' has joined the server');
-            nextcontrol.clientWrapper.chatSendServerMessage(format(Sentences.playerConnect, { player: player.name }));
+            nextcontrol.client.query('ChatSendServerMessage', [format(Sentences.playerConnect, { player: player.name })]);
         }        
     }
 
@@ -48,6 +48,6 @@ export class Join {
      */
     async onPlayerDisconnect(player, reason, nextcontrol) {
         logger('r', stripFormatting(player.name) + ' has left the server, reason: ' + reason);
-        nextcontrol.clientWrapper.chatSendServerMessage(format(Sentences.playerDisconnect, { player: player.name }));
+        nextcontrol.client.query('ChatSendServerMessage', [format(Sentences.playerDisconnect, { player: player.name })]);
     }
 }

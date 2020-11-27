@@ -71,7 +71,11 @@ export class SamplePlugin {
      * @param {NextControl} nextcontrol main class instance
      */
     async commandHelloWorld(login, params, nextcontrol) {
-        nextcontrol.clientWrapper.chatSendServerMessageToLogin('$f00Hello World!', login);
+        
+        // For allowed queries, look up the XML-RPC methods for the
+        // TM2/020 dedicated server: https://doc.maniaplanet.com/dedicated-server/references/xml-rpc-methods
+
+        nextcontrol.client.query('ChatSendServerMessageToLogin', ['$f00Hello World!', login]);
     }
 
     /**
@@ -81,7 +85,7 @@ export class SamplePlugin {
      * @param {NextControl} nextcontrol main class instance
      */
     async commandAdminHelloWorld(login, params, nextcontrol) {
-        nextcontrol.clientWrapper.chatSendServerMessageToLogin('$f0fHello World!', login);
+        nextcontrol.client.query('ChatSendServerMessageToLogin', ['$f0fHello World!', login]);
     }
 
     /**

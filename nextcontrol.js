@@ -72,7 +72,7 @@ export class NextControl {
         this.clientWrapper = clientWrapper;
 
         // woo, we're connected!
-        this.clientWrapper.chatSendServerMessage('Starting NextControl ...');
+        this.clientWrapper.chatSendServerMessage('$0f0~~ $fffStarting NextControl ...');
 
         // create MongoDB client
         let database = new mongodb.MongoClient(Settings.database.uri, { useNewUrlParser: true, useUnifiedTopology: true });
@@ -86,7 +86,7 @@ export class NextControl {
 
         // woo, we're connected!
         logger('su', 'Connected to MongoDB Server');
-        this.clientWrapper.chatSendServerMessage('Connected to database ...');
+        this.clientWrapper.chatSendServerMessage('$0f0~~ $fffConnected to database ...');
 
         // now lets load plugins:
         this.chatCommands = [];
@@ -120,7 +120,7 @@ export class NextControl {
         // now that we're done:
         this.isReady = true;
         logger('i', 'Startup completed, starting to listen');
-        this.clientWrapper.chatSendServerMessage('Up and running!')
+        this.clientWrapper.chatSendServerMessage('$0f0~~ $fffUp and running!')
 
         this.startListening();
     }
@@ -145,7 +145,7 @@ export class NextControl {
                 p = JSON.parse(para[0][0]);
             }
 
-            //console.log(JSON.stringify({method: method, para: para}, null, 2));
+            //console.log(beautify({method: method, para: para}, null, 2));
 
             if (method === 'Trackmania.Event.WayPoint') {
                 p = new Classes.WaypointInfo(p);
@@ -192,7 +192,7 @@ export class NextControl {
 
                         if (!Settings.admins.includes(login)) {
                             // player is not admin!
-                            logger('r', login + ' tried using admin command /' + adminCommand + ', but is no admin!');
+                            logger('r', login + ' tried using command /admin ' + adminCommand + ', but is no admin!');
                             this.clientWrapper.chatSendServerMessageToLogin(Sentences.playerNotAdmin, login);
                         }
                         
@@ -200,13 +200,12 @@ export class NextControl {
                             adminCommand = splitAdminCommand.shift(),
                             adminParams = splitAdminCommand.join(' ');
 
-                        logger('r', login + ' used admin command /' + adminCommand + ' with parameters: ' + adminParams);
+                        logger('r', login + ' used command /admin ' + adminCommand + ' with parameters: ' + adminParams);
 
                         this.adminCommands.forEach(commandDefinition => {
                             if (commandDefinition.commandName === adminCommand) 
                                 commandDefinition.commandHandler(
-                                    login, adminParams,
-                                    this
+                                    login, adminParams, this
                                 );
                         });
                     }
@@ -218,8 +217,7 @@ export class NextControl {
                         this.chatCommands.forEach(commandDefinition => {
                             if (commandDefinition.commandName === command)
                                 commandDefinition.commandHandler(
-                                    login, params,
-                                    this
+                                    login, params, this
                                 );
                         });
                     }

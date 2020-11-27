@@ -156,7 +156,7 @@ export class LocalRecords {
 
             await nextcontrol.client.query('ChatSendServerMessage', [msg]);
 
-            util.logger('r', `${util.stripFormatting(name)} claimed ${pos}. local record (${timeString}) on ${util.stripFormatting(nextcontrol.status.map.name)}`);
+            util.logger('r', `${util.stripFormatting(name)} claimed ${pos} local record (${timeString}) on ${util.stripFormatting(nextcontrol.status.map.name)}`);
             
         } else {
             let rec = new Classes.LocalRecord(login, timeOrScore, uid);
@@ -179,7 +179,7 @@ export class LocalRecords {
                 let msg = util.format(Sentences.localRecords.improved, {player: name, pos: pos, time: timeString, imp: improvement});
 
                 await nextcontrol.client.query('ChatSendServerMessage', [msg]);
-                util.logger('r', `${util.stripFormatting(name)} improved to ${pos}. local record (${timeString}) on ${util.stripFormatting(nextcontrol.status.map.name)}`);
+                util.logger('r', `${util.stripFormatting(name)} improved to ${pos} local record (${timeString}) on ${util.stripFormatting(nextcontrol.status.map.name)}`);
 
             } else if (currentRecord.time == timeOrScore) {
                 let pos = util.nth((await nextcontrol.database.collection('records').countDocuments({track: uid, time: {$lt: rec.time}})) + 1),
@@ -188,7 +188,7 @@ export class LocalRecords {
                 let msg = util.format(Sentences.localRecords.equalled, {player: name, pos: pos, time: timeString});
 
                 await nextcontrol.client.query('ChatSendServerMessage', [msg]);
-                util.logger('r', `${util.stripFormatting(name)} equalled their ${pos}. local record (${timeString}) on ${util.stripFormatting(nextcontrol.status.map.name)}`);
+                util.logger('r', `${util.stripFormatting(name)} equalled their ${pos} local record (${timeString}) on ${util.stripFormatting(nextcontrol.status.map.name)}`);
 
             } // else: currentRecord.time < timeOrScore, no improvement, ignore this
         }

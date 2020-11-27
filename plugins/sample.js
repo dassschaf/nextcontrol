@@ -83,7 +83,7 @@ export class SamplePlugin {
      * @param {NextControl} nextcontrol main class instance
      */
     async commandAdminHelloWorld(login, params, nextcontrol) {
-        nextcontrol.clientWrapper.chatSendServerMessageToLogin('$f0fHello World!', params.login);
+        nextcontrol.clientWrapper.chatSendServerMessageToLogin('$f0fHello World!', login);
     }
 
     /**

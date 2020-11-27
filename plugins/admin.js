@@ -45,7 +45,7 @@ export class AdminSuite {
      * @param {Array<String>} params parameters of the call
      * @param {NextControl} nc 
      */
-    admin_rescantrack(login, params, nc) {
+    async admin_rescantrack(login, params, nc) {
         let map = nc.status.map;
 
         map.tmxid = await TMX.getID(map.uid);
@@ -59,7 +59,7 @@ export class AdminSuite {
      * @param {Array<String>} params parameters of the call
      * @param {NextControl} nc 
      */
-    admin_restart(login, params, nc) {
+    async admin_restart(login, params, nc) {
         // get title and player name
         let name = nc.status.getPlayer(login).name;
 

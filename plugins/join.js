@@ -30,14 +30,14 @@ export class Join {
         
         nextcontrol.databaseWrapper.updatePlayerInfo(player);
 
-        if (Settings.admins.includes(params.login)) {
-            logger('r','Admin ' + stripFormatting(playerInfo.name) + ' has joined the server');
-            nextcontrol.clientWrapper.chatSendServerMessage(format(Sentences.adminConnect, { player: playerInfo.name }));
+        if (Settings.admins.includes(player.login)) {
+            logger('r','Admin ' + stripFormatting(player.name) + ' has joined the server');
+            nextcontrol.clientWrapper.chatSendServerMessage(format(Sentences.adminConnect, { player: player.name }));
         }
 
         else {
-            logger('r', stripFormatting(playerInfo.name) + ' has joined the server');
-            nextcontrol.clientWrapper.chatSendServerMessage(format(Sentences.playerConnect, { player: playerInfo.name }));
+            logger('r', stripFormatting(player.name) + ' has joined the server');
+            nextcontrol.clientWrapper.chatSendServerMessage(format(Sentences.playerConnect, { player: player.name }));
         }        
     }
 

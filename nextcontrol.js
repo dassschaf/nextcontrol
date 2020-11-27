@@ -153,7 +153,7 @@ export class NextControl {
                 this.plugins.forEach(plugin => { if (typeof plugin.onWaypoint != "undefined") plugin.onWaypoint(p, this); })
 
             } else if (method === 'ManiaPlanet.PlayerConnect') {
-                login = String(para[0]);
+                let login = String(para[0]);
                 p = new Classes.PlayerInfo(await this.client.query('GetPlayerInfo', [login, 1]));
 
                 // add player to status
@@ -172,7 +172,7 @@ export class NextControl {
                 this.plugins.forEach(plugin => { if (typeof plugin.onPlayerDisconnect != "undefined")  plugin.onPlayerDisconnect(player, reason, this) });
 
                 // remove player from status
-                this.status.removePlayer(p.login);
+                this.status.removePlayer(player.login);
 
             } else if (method === 'ManiaPlanet.PlayerChat') {
                 let login = String(para[1]),

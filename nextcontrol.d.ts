@@ -1,7 +1,5 @@
 import Client from "gbxremote/lib/client";
-import { ClientWrapper } from "./lib/clientwrapper";
 import { Db } from "mongodb";
-import { DatabaseWrapper } from "./lib/dbwrapper";
 import * as Classes from "./lib/classes";
 
 export class NextControl {
@@ -63,6 +61,22 @@ export class NextControl {
     status : Classes.Status
 
     /**
+     * Object containing Dictionaries (login => list), to store query results in
+     */
+    lists : {
+
+        /**
+         * List containing an array of PlayerInfos from a previous query. Key is the player login starting a query before.
+         */
+        players : Map<String, Array<Classes.PlayerInfo>>,
+
+        /**
+         * List containing an array of Maps from a previous query. Key is the player login starting a query before.
+         */
+        maps : Map<String, Array<Classes.Map>>
+    }
+
+    /**
      * Registers a chat command to be used
      * @param commandDefinition Object containing the definitions for the command
      */
@@ -74,5 +88,5 @@ export class NextControl {
      */
     registerAdminCommand(commandDefinition : Classes.ChatCommand) : void
     
-}
+} 
 

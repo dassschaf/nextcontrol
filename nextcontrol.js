@@ -31,6 +31,23 @@ import { TMX } from './lib/tmx.js'
 export class NextControl {
 
     /**
+     * Object containing Dictionaries (login => list), to store query results in
+     */
+    lists = {
+        /**
+         * List containing an array of PlayerInfos from a previous query. Key is the player login starting a query before.
+         * @type {Map<string, Array<Classes.PlayerInfo>>}
+         */
+        players = new Map(),
+
+        /**
+         * List containing an array of Maps from a previous query. Key is the player login starting a query before.
+         * @type {Map<string, Array<Classes.Map>>}
+         */
+        maps = new Map()
+    }
+
+    /**
      * Flag will be set to true, once the class instance is ready for listening.
      */
     isReady = false;

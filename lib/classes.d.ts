@@ -573,3 +573,63 @@ export class WaypointInfo {
      */
     isLap() : Boolean
 }
+
+export class Jukebox {
+
+    /**
+     * List of Maps in the Jukebox, treated as a queue
+     * @type {Array<JukeboxEntry>}
+     */
+    maps : Array<JukeboxEntry>
+
+    /**
+     * Adds a map to the end of the queue
+     * @param {Map} map Map to be jukeboxed
+     * @param {String} login Acting player's login
+     */
+    queueMap(map, login) : void
+
+    /**
+     * Adds a map to the front of the queue
+     * @param {Map} map Map to be jukeboxed
+     * @param {String} login Acting player's login
+     */
+    priorityAdd(map, login) : void
+
+    /**
+     * Returns the next map from the Queue and unqueues it
+     * @returns {JukeboxEntry | Boolean} Entry in the queue or false if the queue is empty
+     */
+    unqueueMap() : JukeboxEntry | Boolean
+
+    /**
+     * Returns the number of currently jukeboxed tracks
+     * @returns {Number} Queue length
+     */
+    queueLength() : Number
+
+}
+
+/**
+ * Class representing an entry in the Jukebox
+ */
+export class JukeboxEntry {
+
+    /**
+     * Constructs an entry for the Jukebox queue
+     * @param map Map info
+     * @param login Login of the player entering a jukebox wish
+     */
+    constructor(map : Map, login : String)
+
+    /**
+     * Wished map
+     */
+    map : Map
+
+    /**
+     * Wishing player
+     */
+    login : String
+
+}

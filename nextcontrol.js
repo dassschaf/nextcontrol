@@ -182,7 +182,7 @@ export class NextControl {
                 // chat command handling
                 if (isCommand) {
 
-                    let splitCommand = text.split('/')[1].split(' '),
+                    let splitCommand = text.substring(1).split(' '),
                         command = splitCommand.shift(),
                         params = splitCommand.join(' ');
 
@@ -198,7 +198,7 @@ export class NextControl {
                         
                         let splitAdminCommand = params.split(' '),
                             adminCommand = splitAdminCommand.shift(),
-                            adminParams = splitAdminCommand.join(' ');
+                            adminParams = splitAdminCommand;
 
                         logger('r', login + ' used command /admin ' + adminCommand + ' with parameters: ' + adminParams);
 
@@ -217,7 +217,7 @@ export class NextControl {
                         this.chatCommands.forEach(commandDefinition => {
                             if (commandDefinition.commandName === command)
                                 commandDefinition.commandHandler(
-                                    login, params, this
+                                    login, params.split(' '), this
                                 );
                         });
                     }

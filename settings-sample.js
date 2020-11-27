@@ -7,7 +7,9 @@ const Settings = {
 
         game: 'TM2020',         // game: TM2 or TM2020
 
-        server_login: 'blah'    // the server's login at the masterserver
+        server_login: 'blah',   // the server's login at the masterserver
+
+        matchsettings_file: 'set.txt'
     },
 
     database: {

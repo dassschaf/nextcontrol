@@ -9,4 +9,13 @@ export class TMX {
      */
     static async getID(uid) : Number
 
+    /**
+     * Headers list for got-requests
+     */
+    static headers : Object
+
+    /**
+     * to be used TMX site
+     */
+    static site : String
 }

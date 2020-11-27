@@ -459,6 +459,27 @@ export class Status {
      * Gamemode settings
      */
     modeScriptSettings : Object
+
+    /**
+     * List of directory paths on the server machine
+     */
+    directories : {
+        /**
+         * Maps directory path
+         */
+        maps : String
+
+        /**
+         * Skins directory path
+         */
+        skins : String
+
+        /**
+         * Gamedata directory path
+         */
+        gamedata : String 
+
+    }
 }
 
 /**

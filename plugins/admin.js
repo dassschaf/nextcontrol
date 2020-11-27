@@ -121,14 +121,13 @@ export class AdminSuite {
 
         if (source.toLocaleLowerCase() == 'tmx') {
             
-            // save ID
-            let id = Number(link);
-
-            if (id == NaN) {
+            if (isNaN(link) || isNaN(parseFloat(link))) {
                 nc.client.query('ChatSendServerMessageToLogin', [Sentences.admin.addTmxFailedInvalidID, player.login]);
-
                 return;
             }
+
+            // save ID
+            let id = Number(link);
 
             // get paths right
             let directory = nc.status.directories.maps + '/TMX/',
@@ -166,7 +165,28 @@ export class AdminSuite {
         }
 
         if (source.toLocaleLowerCase() == 'local') {
-            
+            let directory = nc.status.directories.maps,
+                fullPath = directory + link;
+
+            // check if file exists in the first place
+            if (!fs.existsSync(fullPath)) {
+                nc.client.query('ChatSendServerMessageToLogin', [Sentences.admin.addLocalFailedInvalidPth, login]);   
+                return;
+            }
+
+            let map = new Classes.Map(await nc.client.query('GetMapInfo', [fullPath]));
+            map.setTMXId(await TMX.getID(map.uid));
+
+            // add track to the map list
+            await nc.client.query('InsertMap', [fullPath]);
+            await nc.client.query('SaveMatchSettings', [nc.status.directories.maps + '/MatchSettings/' + Settings.trackmania.matchsettings_file]);
+
+            // add track to the database
+            await nc.database.collection('maps').insertOne(map);
+
+            // send info
+            await nc.client.query('ChatSendServerMessage', [format(Sentences.admin.addedLocal, {name: player.name, track: map.name})]);
+            logger('r', `Local track ${stripFormatting(map.name)} (${link}) was added to the map list.`);
         }
 
         if (source.toLocaleLowerCase() == 'url') {
@@ -174,6 +194,7 @@ export class AdminSuite {
             let directory = nc.status.directories.maps + '/URL/',
                 filename = link.split('/').pop();
 
+            // fix file name ending
             if (!filename.endsWith('.Map.Gbx'))
                 filename += '.Map.Gbx';
 
@@ -189,7 +210,7 @@ export class AdminSuite {
 
             // get track info
             let map = new Classes.Map(await nc.client.query('GetMapInfo', [directory + filename]));
-            map.setTMXId(TMX.getID(map.uid));
+            map.setTMXId(await TMX.getID(map.uid));
 
             // add track to the map list
             await nc.client.query('InsertMap', [directory + filename]);

@@ -84,7 +84,7 @@ export class LocalRecords {
 
         // print local records to chat
         if ((await nextcontrol.database.collection('records').countDocuments({track : map.uid})) < 1) {
-            nextcontrol.clientWrapper.chatSendServerMessage(util.format(Sentences.localRecords.noneYet, { when: Sentences.localRecords.before, track: map.name}));
+            nextcontrol.client.query('chatSendServerMessage', [util.format(Sentences.localRecords.noneYet, { when: Sentences.localRecords.before, track: map.name})]);
         } else {
             let msg = util.format(Sentences.localRecords.listBegin, {track: map.name, when: Sentences.localRecords.before});
 
@@ -125,7 +125,7 @@ export class LocalRecords {
 
         // print local records to chat
         if ((await nextcontrol.database.collection('records').countDocuments({track : map.uid})) < 1) {
-            nextcontrol.clientWrapper.chatSendServerMessage(util.format(Sentences.localRecords.noneYet, { when: Sentences.localRecords.after, track: map.name}));
+            nnextcontrol.client.query('chatSendServerMessage', [util.format(Sentences.localRecords.noneYet, { when: Sentences.localRecords.after, track: map.name})]);
         
         } else {
             let msg = util.format(Sentences.localRecords.listBegin, {track: map.name, when: Sentences.localRecords.after});

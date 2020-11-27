@@ -34,9 +34,46 @@ export class LocalRecords {
      * @param {NextControl} nextcontrol The script's brain we require to properly register the chat commands
      */
     constructor(nextcontrol) {
-        
+        nextcontrol.registerChatCommand(new Classes.ChatCommand('recs', this.chat_recs, 'Displays the local records on the current track.', this.name));
+    }
 
-        
+    /**
+     * Chat command, to display local recs on current track
+     * @param {String} login Login of the player calling this command
+     * @param {Array<String>} params Parameters passed by the player after the command (seperated by space)
+     * @param {NextControl} nextcontrol main class instance
+     */
+    async chat_recs(login, params, nextcontrol) {
+        let map = nextcontrol.status.map;
+
+        // print local records to chat
+        if ((await nextcontrol.database.collection('records').countDocuments({track : map.uid})) < 1) {
+            nextcontrol.client.query("ChatSendServerMessageToLogin", [util.format(Sentences.localRecords.noneYet, { when: Sentences.localRecords.rightnow, track: map.name}), login]);
+
+        } else {
+            let msg = util.format(Sentences.localRecords.listBegin, {track: map.name, when: Sentences.localRecords.rightnow});
+
+            let records = await nextcontrol.database.collection('records').aggregate([
+                { $match: { track: map.uid } },
+                { $sort: { time: 1 }},
+                { $lookup: {
+                    from: 'players',
+                    localField: 'login',
+                    foreignField: 'login',
+                    as: 'player'
+                }}]);
+
+            records = await records.toArray();
+
+            records.forEach((rec, i) => {
+                if (i == records.length - 1)
+                    msg += util.format(Sentences.localRecords.listItem, {pos: i+1, name: rec.player[0].name, time: util.msToString(rec.time)});
+                else 
+                    msg += util.format(Sentences.localRecords.listItem, {pos: i+1, name: rec.player[0].name, time: util.msToString(rec.time)}) + ', ';
+            })
+
+            await nextcontrol.client.query('ChatSendServerMessageToLogin', [msg, login]);
+        }
     }
 
     /**

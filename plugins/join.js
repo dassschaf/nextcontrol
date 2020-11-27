@@ -2,7 +2,6 @@ import { Sentences } from '../lib/sentences.js'
 import { logger, format, stripFormatting } from '../lib/utilities.js'
 import { NextControl } from '../nextcontrol.js'
 import { Settings } from '../settings.js'
-import * as CallbackParams from '../lib/callbackparams.js'
 import * as Classes from '../lib/classes.js'
 
 /**

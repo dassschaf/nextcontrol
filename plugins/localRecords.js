@@ -3,8 +3,6 @@ import { Sentences } from '../lib/sentences.js'
 import * as util from '../lib/utilities.js'
 import { Settings } from '../settings.js'
 
-import { ClientWrapper } from '../lib/clientwrapper.js'
-import { DatabaseWrapper } from '../lib/dbwrapper.js'
 import * as CallbackParams from '../lib/callbackparams.js'
 import * as Classes from '../lib/classes.js'
 import { NextControl } from '../nextcontrol.js'

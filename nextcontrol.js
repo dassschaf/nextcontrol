@@ -18,8 +18,7 @@ import beautify from 'json-beautify';
 import * as CallbackParams from './lib/callbackparams.js';
 import * as Classes from './lib/classes.js';
 import { logger } from './lib/utilities.js';
-import { ClientWrapper } from './lib/clientwrapper.js';
-import { DatabaseWrapper } from './lib/dbwrapper.js';
+
 import { Settings } from './settings.js';
 import { Sentences } from './lib/sentences.js';
 import { getPluginList } from './plugins.js'
@@ -64,15 +63,14 @@ export class NextControl {
         });
 
         // wait for promise
-        let clientWrapper = new ClientWrapper(await serverPromise);
+        await serverPromise;
         logger('su', 'Connected to Trackmania Server');
 
         // set properties accordingly
         this.client = client;
-        this.clientWrapper = clientWrapper;
 
         // woo, we're connected!
-        this.clientWrapper.chatSendServerMessage('$0f0~~ $fffStarting NextControl ...');
+        this.client.query('ChatSendServerMessage', ['$0f0~~ $fffStarting NextControl ...']);
 
         // create MongoDB client
         let database = new mongodb.MongoClient(Settings.database.uri, { useNewUrlParser: true, useUnifiedTopology: true });
@@ -82,11 +80,10 @@ export class NextControl {
 
         // set properties accordingly
         this.database = await database.db(Settings.database.database);
-        this.databaseWrapper = new DatabaseWrapper(this.database);
 
         // woo, we're connected!
         logger('su', 'Connected to MongoDB Server');
-        this.clientWrapper.chatSendServerMessage('$0f0~~ $fffConnected to database ...');
+        this.client.query('ChatSendServerMessage', ['$0f0~~ $fffConnected to database ...']);
 
         // now lets load plugins:
         this.chatCommands = [];
@@ -120,7 +117,7 @@ export class NextControl {
         // now that we're done:
         this.isReady = true;
         logger('i', 'Startup completed, starting to listen');
-        this.clientWrapper.chatSendServerMessage('$0f0~~ $fffUp and running!')
+        this.client.query('ChatSendServerMessage', ['$0f0~~ $fffUp and running!']);
 
         this.startListening();
     }
@@ -193,7 +190,7 @@ export class NextControl {
                         if (!Settings.admins.includes(login)) {
                             // player is not admin!
                             logger('r', login + ' tried using command /admin ' + adminCommand + ', but is no admin!');
-                            this.clientWrapper.chatSendServerMessageToLogin(Sentences.playerNotAdmin, login);
+                            this.client.query('ChatSendServerMessageToLogin', [Sentences.playerNotAdmin, login]);
                         }
                         
                         let splitAdminCommand = params.split(' '),

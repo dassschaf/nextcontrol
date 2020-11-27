@@ -37,6 +37,7 @@ export class AdminSuite {
     constructor(nextcontrol) {
         nextcontrol.registerAdminCommand(new Classes.ChatCommand('rescantrack', this.admin_rescantrack, 'rescans track, to add it to the database', this.name));
         nextcontrol.registerAdminCommand(new Classes.ChatCommand('restart', this.admin_restart, 'Restarts the current track immediately', this.name));
+        nextcontrol.registerAdminCommand(new Classes.ChatCommand('skip', this.admin_skip, 'Skips the current track immediately', this.name));
         nextcontrol.registerAdminCommand(new Classes.ChatCommand('add', this.admin_add, 'Add new tracks to the server from TMX, URL or local path', this.name));
         nextcontrol.registerAdminCommand(new Classes.ChatCommand('shutdown', this.admin_shutdown, 'Shuts down Nextcontrol', this.name));
     }
@@ -65,10 +66,22 @@ export class AdminSuite {
         // get title and player name
         let name = nc.status.getPlayer(login).name;
 
-        nc.client.query('RestartMap').then(res => {
-            nc.clientWrapper.chatSendServerMessage(format(Sentences.admin.restart, {name: name}));
-        });
+        await nc.client.query('RestartMap');
+        await nc.clientWrapper.chatSendServerMessage(format(Sentences.admin.restart, {name: name}));
+    }
 
+    /**
+     * Function making the current track being skipped
+     * @param {String} login login of the calling player 
+     * @param {Array<String>} params parameters of the call
+     * @param {NextControl} nc 
+     */
+    async admin_skip(login, params, nc) {
+        // get title and player name
+        let name = nc.status.getPlayer(login).name;
+
+        await nc.client.query('NextMap');
+        await nc.clientWrapper.chatSendServerMessage(format(Sentences.admin.restart, {name: name}));
     }
 
     /**

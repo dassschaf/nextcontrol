@@ -1,6 +1,6 @@
 
 import { Sentences } from '../lib/sentences.js'
-import { logger, format, stripFormatting } from '../lib/utilities.js'
+import * as util from '../lib/utilities.js'
 import { Settings } from '../settings.js'
 
 import { ClientWrapper } from '../lib/clientwrapper.js'
@@ -29,14 +29,6 @@ export class LocalRecords {
      */
     description    = 'Local Records plugin'
 
-    currentTrack = {
-        /**
-         * current track UID
-         */
-        uid: ''
-    }
-
-
     /**
      * Constructor, registering the chat commands at the main class upon plugin loading
      * @param {NextControl} nextcontrol The script's brain we require to properly register the chat commands
@@ -48,33 +40,41 @@ export class LocalRecords {
     }
 
     /**
-     * Function run, when a new map begins
-     * @param {Classes.Map} map Callback parameters
+     * Function run, when a new match begins
      * @param {NextControl} nextcontrol main class instance
      */
-    async onBeginMap(map, nextcontrol) {
+    async onBeginMatch(nextcontrol) {
+
+        let map = nextcontrol.status.map;
 
         // print local records to chat
-        if (await nextcontrol.database.collection('records').countDocuments({uid : map.uid}) < 1) {
-            nextcontrol.clientWrapper.chatSendServerMessage(format(Sentences.localRecords.noneYet, { when: Sentences.localRecords.before, track: map.name}));
+        if ((await nextcontrol.database.collection('records').countDocuments({track : map.uid})) < 1) {
+            nextcontrol.clientWrapper.chatSendServerMessage(util.format(Sentences.localRecords.noneYet, { when: Sentences.localRecords.before, track: map.name}));
         } else {
-            let records = await nextcontrol.database.collection('records').find({uid : map.uid}).sort({time: 1});
+            let msg = util.format(Sentences.localRecords.listBegin, {track: map.name, when: Sentences.localRecords.before});
 
-            // print:
-            let msg = format(Sentences.localRecords.listBegin, {track: map.name, when: Sentences.localRecords.before});
-            
-            records.forEach(async (rec, i) => {
-                if (i < records.length - 1) {
-                    let nickname = (await nextcontrol.database.collection('players').findOne({login: rec.login})).name;
-                    msg += format(Sentences.localRecords.listItem, {pos: i + 1, name: nickname, time: rec.time}) + ', ';
-                }
-                else {
-                    let nickname = (await nextcontrol.database.collection('players').findOne({login: rec.login})).name;
-                    msg += format(Sentences.localRecords.listItem, {pos: i + 1, name: nickname, time: rec.time});
-                }
-            });
+            let records = await nextcontrol.database.collection('records').aggregate([
+                { $match: { track: map.uid } },
+                { $sort: { time: 1 }},
+                { $lookup: {
+                    from: 'players',
+                    localField: 'login',
+                    foreignField: 'login',
+                    as: 'player'
+                }}]);
 
-            nextcontrol.client.query('ChatSendServerMessage', [msg]);
+            records = await records.toArray();
+
+            //console.log(JSON.stringify(records));
+
+            records.forEach((rec, i) => {
+                if (i == records.length - 1)
+                    msg += util.format(Sentences.localRecords.listItem, {pos: i+1, name: rec.player[0].name, time: util.msToString(rec.time)});
+                else 
+                    msg += util.format(Sentences.localRecords.listItem, {pos: i+1, name: rec.player[0].name, time: util.msToString(rec.time)}) + ', ';
+            })
+
+            await nextcontrol.client.query('ChatSendServerMessage', [msg]);
         }
 
 
@@ -82,32 +82,39 @@ export class LocalRecords {
 
     /**
      * Function run, when a map ends
-     * @param {Classes.Map} map Callback parameters
+     * @param {CallbackParams.MatchResults} map Callback parameters
      * @param {NextControl} nextcontrol main class instance
      */
-    async onEndMap(map, nextcontrol) {
+    async onEndMatch(results, nextcontrol) {
+        let map = nextcontrol.status.map;
 
         // print local records to chat
-        if (await nextcontrol.database.collection('records').countDocuments({uid : map.uid}) < 1) {
-            nextcontrol.clientWrapper.chatSendServerMessage(format(Sentences.localRecords.noneYet, { when: Sentences.localRecords.after, track: map.name}));
+        if ((await nextcontrol.database.collection('records').countDocuments({track : map.uid})) < 1) {
+            nextcontrol.clientWrapper.chatSendServerMessage(util.format(Sentences.localRecords.noneYet, { when: Sentences.localRecords.after, track: map.name}));
+        
         } else {
-            let records = await nextcontrol.database.collection('records').find({uid : map.uid}).sort({time: 1});
+            let msg = util.format(Sentences.localRecords.listBegin, {track: map.name, when: Sentences.localRecords.after});
 
-            // print:
-            let msg = format(Sentences.localRecords.listBegin, {track: map.name, when: Sentences.localRecords.after});
-            
-            records.forEach(async (rec, i) => {
-                if (i < records.length - 1) {
-                    let nickname = (await nextcontrol.database.collection('players').findOne({login: rec.login})).name;
-                    msg += format(Sentences.localRecords.listItem, {pos: i + 1, name: nickname, time: rec.time}) + ', ';
-                }
-                else {
-                    let nickname = (await nextcontrol.database.collection('players').findOne({login: rec.login})).name;
-                    msg += format(Sentences.localRecords.listItem, {pos: i + 1, name: nickname, time: rec.time});
-                }
-            });
+            let records = await nextcontrol.database.collection('records').aggregate([
+                { $match: { track: map.uid } },
+                { $sort: { time: 1 }},
+                { $lookup: {
+                    from: 'players',
+                    localField: 'login',
+                    foreignField: 'login',
+                    as: 'player'
+                }}]);
 
-            nextcontrol.client.query('ChatSendServerMessage', [msg]);
+            records = await records.toArray();
+
+            records.forEach((rec, i) => {
+                if (i == records.length - 1)
+                    msg += util.format(Sentences.localRecords.listItem, {pos: i+1, name: rec.player[0].name, time: util.msToString(rec.time)});
+                else 
+                    msg += util.format(Sentences.localRecords.listItem, {pos: i+1, name: rec.player[0].name, time: util.msToString(rec.time)}) + ', ';
+            })
+
+            await nextcontrol.client.query('ChatSendServerMessage', [msg]);
         }
     } 
 
@@ -132,52 +139,56 @@ export class LocalRecords {
 
         let uid = nextcontrol.status.map.uid;
 
+        let timeString = util.msToString(timeOrScore);
+
         // get current local record and determine whether improvement
-        if (await nextcontrol.database.collection('records').countDocuments({ uid: uid, login: login }) < 1) {
+        if ((await nextcontrol.database.collection('records').countDocuments({ track: uid, login: login })) == 0) {
             // no record exists yet
             // insert new record document
             let rec = new Classes.LocalRecord(login, timeOrScore, uid);
 
             await nextcontrol.database.collection('records').insertOne(rec);
 
-            let pos = await nextcontrol.database.collection('records').countDocuments({uid: uid, time: {$lt: rec.time}}),
+            let pos = util.nth((await nextcontrol.database.collection('records').countDocuments({track: uid, time: {$lt: rec.time}})) + 1),
                 name = nextcontrol.status.getPlayer(login).name;
 
-            let msg = format(Sentences.localRecords.claimed, {player: name, pos: pos, time: rec.time});
+            let msg = util.format(Sentences.localRecords.claimed, {player: name, pos: pos, time: timeString});
 
             await nextcontrol.client.query('ChatSendServerMessage', [msg]);
 
-            logger('r', `${stripFormatting(name)} claimed ${pos}. local record (${rec.time}) on ${stripFormatting(nextcontrol.status.map.name)}`);
+            util.logger('r', `${util.stripFormatting(name)} claimed ${pos}. local record (${timeString}) on ${util.stripFormatting(nextcontrol.status.map.name)}`);
             
         } else {
+            let rec = new Classes.LocalRecord(login, timeOrScore, uid);
+
             // there is already an existing, matching record:
-            let currentRecord = await nextcontrol.database.collection('records').findOne({ uid: uid, login: login });
+            let currentRecord = await nextcontrol.database.collection('records').findOne({ track: uid, login: login });
 
             // if improvement, update record and determine position
             if (currentRecord.time > timeOrScore) { 
                 // improvement!
 
                 // save new new time to database
-                await nextcontrol.database.collection('records').updateOne({login: login, uid: uid}, {$set: rec});
+                await nextcontrol.database.collection('records').updateOne({login: login, track: uid}, {$set: rec});
 
                 // send improvement message:
-                let improvement = (currentRecord.time - rec.time) / 1000,
-                    pos = await nextcontrol.database.collection('records').countDocuments({uid: uid, time: {$lt: rec.time}}),
+                let improvement = - (currentRecord.time - rec.time) / 1000,
+                    pos = util.nth((await nextcontrol.database.collection('records').countDocuments({track: uid, time: {$lt: rec.time}})) + 1),
                     name = nextcontrol.status.getPlayer(login).name;
 
-                let msg = format(Sentences.localRecords.improved, {player: name, pos: pos, time: rec.time, imp: improvement});
+                let msg = util.format(Sentences.localRecords.improved, {player: name, pos: pos, time: timeString, imp: improvement});
 
                 await nextcontrol.client.query('ChatSendServerMessage', [msg]);
-                logger('r', `${stripFormatting(name)} improved to ${pos}. local record (${rec.time}) on ${stripFormatting(nextcontrol.status.map.name)}`);
+                util.logger('r', `${util.stripFormatting(name)} improved to ${pos}. local record (${timeString}) on ${util.stripFormatting(nextcontrol.status.map.name)}`);
 
             } else if (currentRecord.time == timeOrScore) {
-                let pos = await nextcontrol.database.collection('records').countDocuments({uid: uid, time: {$lt: rec.time}}),
+                let pos = util.nth((await nextcontrol.database.collection('records').countDocuments({track: uid, time: {$lt: rec.time}})) + 1),
                     name = nextcontrol.status.getPlayer(login).name;
 
-                let msg = format(Sentences.localRecords.equalled, {player: name, pos: pos, time: rec.time});
+                let msg = util.format(Sentences.localRecords.equalled, {player: name, pos: pos, time: timeString});
 
                 await nextcontrol.client.query('ChatSendServerMessage', [msg]);
-                logger('r', `${stripFormatting(name)} equalled their ${pos}. local record (${rec.time}) on ${stripFormatting(nextcontrol.status.map.name)}`);
+                util.logger('r', `${util.stripFormatting(name)} equalled their ${pos}. local record (${timeString}) on ${util.stripFormatting(nextcontrol.status.map.name)}`);
 
             } // else: currentRecord.time < timeOrScore, no improvement, ignore this
         }

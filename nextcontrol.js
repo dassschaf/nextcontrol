@@ -144,175 +144,157 @@ export class NextControl {
                 method = para.shift();
                 p = JSON.parse(para[0][0]);
             }
-            
-            console.log(JSON.stringify({method: method, para: para}, null, 2));
 
-            switch (method) {
-                case 'Trackmania.Event.WayPoint':
-                    p = new Classes.WaypointInfo(p);
+            //console.log(JSON.stringify({method: method, para: para}, null, 2));
 
-                    this.plugins.forEach(plugin => { if (typeof plugin.onPlayerConnect != "undefined") plugin.onWaypoint(p, this); })
+            if (method === 'Trackmania.Event.WayPoint') {
+                p = new Classes.WaypointInfo(p);
 
-                    break;
+                this.plugins.forEach(plugin => { if (typeof plugin.onWaypoint != "undefined") plugin.onWaypoint(p, this); })
 
-                case 'ManiaPlanet.PlayerConnect':
-                    let login = String(para[0]);
-                    p = new Classes.PlayerInfo(await this.client.query('GetPlayerInfo', [login, 1]));
+            } else if (method === 'ManiaPlanet.PlayerConnect') {
+                login = String(para[0]);
+                p = new Classes.PlayerInfo(await this.client.query('GetPlayerInfo', [login, 1]));
 
-                    // add player to status
-                    this.status.addPlayer(p);
+                // add player to status
+                this.status.addPlayer(p);
 
-                    //get variables right for handlers
-                    let isSpectator = Boolean(para[1]);                    
+                //get variables right for handlers
+                let isSpectator = Boolean(para[1]);
 
-                    // start player connect handlers
-                    this.plugins.forEach(plugin => { if (typeof plugin.onPlayerConnect != "undefined")  plugin.onPlayerConnect(p, isSpectator, this) });      
-                    break;
-        
-                case 'ManiaPlanet.PlayerDisconnect':
-                    let player = this.status.getPlayer(String(para[0])),
-                        reason = String(para[1]);
-                    // start player disconnect handlers
-                    this.plugins.forEach(plugin => { if (typeof plugin.onPlayerDisconnect != "undefined")  plugin.onPlayerDisconnect(player, reason, this) });
+                // start player connect handlers
+                this.plugins.forEach(plugin => { if (typeof plugin.onPlayerConnect != "undefined")  plugin.onPlayerConnect(p, isSpectator, this) });
 
-                    // remove player from status
-                    this.status.removePlayer(p.login);
-                    break;
-        
-                case 'ManiaPlanet.PlayerChat':
-                    let login = String(para[1]),
-                        text = String(para[2]),
-                        isCommand = Boolean(para[3]);
-        
-                    // chat command handling
-                    if (isCommand) {
+            } else if (method === 'ManiaPlanet.PlayerDisconnect') {
+                let player = this.status.getPlayer(String(para[0])),
+                    reason = String(para[1]);
+                // start player disconnect handlers
+                this.plugins.forEach(plugin => { if (typeof plugin.onPlayerDisconnect != "undefined")  plugin.onPlayerDisconnect(player, reason, this) });
 
-                        let splitCommand = text.split('/')[1].split(' '),
-                            command = splitCommand.shift(),
-                            params = splitCommand.join(' ');
+                // remove player from status
+                this.status.removePlayer(p.login);
+
+            } else if (method === 'ManiaPlanet.PlayerChat') {
+                let login = String(para[1]),
+                    text = String(para[2]),
+                    isCommand = Boolean(para[3]);
+
+                // chat command handling
+                if (isCommand) {
+
+                    let splitCommand = text.split('/')[1].split(' '),
+                        command = splitCommand.shift(),
+                        params = splitCommand.join(' ');
 
 
-                        if (command == 'admin') {
-                            // handle admin command, command is "first" parameter
+                    if (command == 'admin') {
+                        // handle admin command, command is "first" parameter
 
-                            if (!Settings.admins.includes(login)) {
-                                // player is not admin!
-                                logger('r', login + ' tried using admin command /' + adminCommand + ', but is no admin!');
-                                this.clientWrapper.chatSendServerMessageToLogin(Sentences.playerNotAdmin, login);
-                            }
-                            
-                            let splitAdminCommand = params.split(' '),
-                                adminCommand = splitAdminCommand.shift(),
-                                adminParams = splitAdminCommand.join(' ');
-
-                            logger('r', login + ' used admin command /' + adminCommand + ' with parameters: ' + adminParams);
-
-                            this.adminCommands.forEach(commandDefinition => {
-                                if (commandDefinition.commandName === adminCommand) 
-                                    commandDefinition.commandHandler(
-                                        login, adminParams,
-                                        this
-                                    );
-                            });
+                        if (!Settings.admins.includes(login)) {
+                            // player is not admin!
+                            logger('r', login + ' tried using admin command /' + adminCommand + ', but is no admin!');
+                            this.clientWrapper.chatSendServerMessageToLogin(Sentences.playerNotAdmin, login);
                         }
                         
-                        else {
-                            // handle regular command
-                            logger('r', login + ' used command /' + command + ' with parameters: ' + params);
+                        let splitAdminCommand = params.split(' '),
+                            adminCommand = splitAdminCommand.shift(),
+                            adminParams = splitAdminCommand.join(' ');
 
-                            this.chatCommands.forEach(commandDefinition => {
-                                if (commandDefinition.commandName === command)
-                                    commandDefinition.commandHandler(
-                                        login, params,
-                                        this
-                                    );
-                            });
-                        }
+                        logger('r', login + ' used admin command /' + adminCommand + ' with parameters: ' + adminParams);
+
+                        this.adminCommands.forEach(commandDefinition => {
+                            if (commandDefinition.commandName === adminCommand) 
+                                commandDefinition.commandHandler(
+                                    login, adminParams,
+                                    this
+                                );
+                        });
                     }
-
-                    // regular onChat function        
-                    this.plugins.forEach(plugin => { if (typeof plugin.onChat != "undefined") plugin.onChat(login, text, this) });
-                    break;
-        
-                case 'ManiaPlanet.BeginMap':
-                    p = Classes.Map.fromCallback(para);
-
-                    if (await this.database.collection('maps').countDocuments({uid : p.uid}) > 0)
-                        p = await this.database.collection('maps').findOne({uid : p.uid});
-
+                    
                     else {
-                        // find TMX id
-                        p.setTMXId(await TMX.getID(p.uid));
+                        // handle regular command
+                        logger('r', login + ' used command /' + command + ' with parameters: ' + params);
 
-                        // update database entry
-                        await this.database.collection('maps').insertOne(p);
+                        this.chatCommands.forEach(commandDefinition => {
+                            if (commandDefinition.commandName === command)
+                                commandDefinition.commandHandler(
+                                    login, params,
+                                    this
+                                );
+                        });
                     }
+                }
 
-                    // update status:
-                    this.status.map = p;
+                // regular onChat function        
+                this.plugins.forEach(plugin => { if (typeof plugin.onChat != "undefined") plugin.onChat(login, text, this) });
 
-                    this.plugins.forEach(plugin => { if (typeof plugin.onBeginMap != "undefined") plugin.onBeginMap(p, this) });
-                    break;
-        
-                case 'ManiaPlanet.BeginMatch':
-                    // has no parameters
-                    this.plugins.forEach(plugin => { if (typeof plugin.onBeginMatch != "undefined") plugin.onBeginMatch(this) });
-                    break;
-        
-                case 'ManiaPlanet.BillUpdated':
-                    p = new CallbackParams.UpdatedBill(para);
-                    this.plugins.forEach(plugin => { if (typeof plugin.onBillUpdate != "undefined") plugin.onBillUpdate(p, this) });
-                    break;
-        
-                case 'ManiaPlanet.EndMap':
-                    p = Classes.Map.fromCallback(para);
-                    this.plugins.forEach(plugin => { if (typeof plugin.onEndMap != "undefined") plugin.onEndMap(p, this) });
-                    break;
-        
-                case 'ManiaPlanet.EndMatch':
-                    p = new CallbackParams.MatchResults(para);
-                    this.plugins.forEach(plugin => { if (typeof plugin.onEndMatch != "undefined") plugin.onEndMatch(p, this) });
-                    break;
-        
-                case 'ManiaPlanet.MapListModified':
-                    p = new CallbackParams.MaplistChange(para);
-                    this.plugins.forEach(plugin => { if (typeof plugin.onMaplistChange != "undefined") plugin.onMaplistChange(p, this) });
-                    break;
-        
-                case 'ManiaPlanet.PlayerAlliesChanged':
-                    p = para[0]; // = player login
-                    this.plugins.forEach(plugin => { if (typeof plugin.onPlayersAlliesChange != "undefined") plugin.onPlayersAlliesChange(p, this) });
-                    break;
-        
-                case 'ManiaPlanet.PlayerInfoChanged':
-                    p = new Classes.PlayerInfo(para[0]);
-                    this.plugins.forEach(plugin => { if (typeof plugin.onPlayerInfoChange != "undefined") plugin.onPlayerInfoChange(p, this) });
-                    break;
-        
-                case 'ManiaPlanet.PlayerManialinkPageAnswer':
-                    p = new CallbackParams.ManialinkPageAnswer(para);
-                    this.plugins.forEach(plugin => { if (typeof plugin.onManialinkPageAnswer != "undefined") plugin.onManialinkPageAnswer(p, this) });
-                    break;
-        
-                case 'ManiaPlanet.StatusChanged':
-                    p = Classes.ServerStatus.fromCallback(para);
-                    this.plugins.forEach(plugin => { if (typeof plugin.onStatusChange != "undefined") plugin.onStatusChange(p, this) });
-                    break;
-        
-                case 'ManiaPlanet.TunnelDataRecieved':
-                    p = new CallbackParams.TunnelData(para);
-                    this.plugins.forEach(plugin => { if (typeof plugin.onTunnelDataRecieved != "undefined") plugin.onTunnelDataRecieved(p, this) });
-                    break;
-        
-                case 'ManiaPlanet.VoteUpdated':
-                    p = Classes.CallVote.fromCallback(para);
-                    this.plugins.forEach(plugin => { if (typeof plugin.onVoteUpdate != "undefined") plugin.onVoteUpdate(p, this) });
-                    break;
-        
-                case 'TrackMania.PlayerIncoherence':
-                    p = new CallbackParams.PlayerIncoherence(para);
-                    this.plugins.forEach(plugin => { if (typeof plugin.onIncoherence != "undefined") plugin.onIncoherence(p, this) });
-                    break;
+            } else if (method === 'ManiaPlanet.BeginMap') {
+                p = Classes.Map.fromCallback(para);
+
+                if ((await this.database.collection('maps').countDocuments({uid : p.uid})) > 0)
+                    p = await this.database.collection('maps').findOne({uid : p.uid});
+
+                else {
+                    // find TMX id
+                    p.setTMXId(await TMX.getID(p.uid));
+
+                    // update database entry
+                    await this.database.collection('maps').insertOne(p);
+                }
+
+                // update status:
+                this.status.map = p;
+
+                this.plugins.forEach(plugin => { if (typeof plugin.onBeginMap != "undefined") plugin.onBeginMap(p, this) });
+
+            } else if (method === 'ManiaPlanet.BeginMatch') {
+                // has no parameters
+                this.plugins.forEach(plugin => { if (typeof plugin.onBeginMatch != "undefined") plugin.onBeginMatch(this) });
+
+            } else if (method === 'ManiaPlanet.BillUpdated') {
+                p = new CallbackParams.UpdatedBill(para);
+                this.plugins.forEach(plugin => { if (typeof plugin.onBillUpdate != "undefined") plugin.onBillUpdate(p, this) });
+
+            } else if (method === 'ManiaPlanet.EndMap') {
+                p = Classes.Map.fromCallback(para);
+                this.plugins.forEach(plugin => { if (typeof plugin.onEndMap != "undefined") plugin.onEndMap(p, this) });
+
+            } else if (method === 'ManiaPlanet.EndMatch') {
+                p = new CallbackParams.MatchResults(para);
+                this.plugins.forEach(plugin => { if (typeof plugin.onEndMatch != "undefined") plugin.onEndMatch(p, this) });
+
+            } else if (method === 'ManiaPlanet.MapListModified') {
+                p = new CallbackParams.MaplistChange(para);
+                this.plugins.forEach(plugin => { if (typeof plugin.onMaplistChange != "undefined") plugin.onMaplistChange(p, this) });
+
+            } else if (method === 'ManiaPlanet.PlayerAlliesChanged') {
+                p = para[0]; // = player login
+                this.plugins.forEach(plugin => { if (typeof plugin.onPlayersAlliesChange != "undefined") plugin.onPlayersAlliesChange(p, this) });
+
+            } else if (method === 'ManiaPlanet.PlayerInfoChanged') {
+                p = new Classes.PlayerInfo(para[0]);
+                this.plugins.forEach(plugin => { if (typeof plugin.onPlayerInfoChange != "undefined") plugin.onPlayerInfoChange(p, this) });
+
+            } else if (method === 'ManiaPlanet.PlayerManialinkPageAnswer') {
+                p = new CallbackParams.ManialinkPageAnswer(para);
+                this.plugins.forEach(plugin => { if (typeof plugin.onManialinkPageAnswer != "undefined") plugin.onManialinkPageAnswer(p, this) });
+
+            } else if (method === 'ManiaPlanet.StatusChanged') {
+                p = Classes.ServerStatus.fromCallback(para);
+                this.plugins.forEach(plugin => { if (typeof plugin.onStatusChange != "undefined") plugin.onStatusChange(p, this) });
+
+            } else if (method === 'ManiaPlanet.TunnelDataRecieved') {
+                p = new CallbackParams.TunnelData(para);
+                this.plugins.forEach(plugin => { if (typeof plugin.onTunnelDataRecieved != "undefined") plugin.onTunnelDataRecieved(p, this) });
+
+            } else if (method === 'ManiaPlanet.VoteUpdated') {
+                p = Classes.CallVote.fromCallback(para);
+                this.plugins.forEach(plugin => { if (typeof plugin.onVoteUpdate != "undefined") plugin.onVoteUpdate(p, this) });
+
+            } else if (method === 'TrackMania.PlayerIncoherence') {
+                p = new CallbackParams.PlayerIncoherence(para);
+                this.plugins.forEach(plugin => { if (typeof plugin.onIncoherence != "undefined") plugin.onIncoherence(p, this) });
+    
             }
         });
     }

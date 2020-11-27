@@ -27,3 +27,15 @@ export function format(sentence : string, fillings : any) : string
  * @param string clean text string
  */
 export function stripFormatting(string : string) : string
+
+/**
+ * Formats a time in milliseconds to a human-readable string
+ * @param ms time in ms
+ */
+export function msToString(ms : Number) : string
+
+/**
+ * Gives the proper n-th suffix for a number
+ * @param d number
+ */
+export function nth(d : Number) : string

@@ -121,11 +121,22 @@ export class ListsPlugin {
         
         if (list === MAPS_L) {
             // print maps list for player $login
-            
+
+            let items = nc.lists.maps.get(login),
+                lowerBound = (pageNr - 1) * ITEMS,
+                upperBound = pageNr * ITEMS,
+                message = util.format(Sentences.lists.header, {type: 'Maps', pg: pageNr, pages: Math.ceil(items.length / ITEMS)});
+
+            items = items.slice(lowerBound, upperBound);
+
+            items.forEach((item, i) => message += '\n' + util.format(Sentences.lists.mapItem, {id: i, name: item.name, author: item.author}));
+
+            await nc.client.query('ChatSendServerMessageToLogin', [message, login]);
         }
 
         if (list === PLAYERS_L) {
             // print players list for player $login
+
         }
     }
 

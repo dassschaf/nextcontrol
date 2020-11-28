@@ -426,19 +426,26 @@ export class Status {
      * Removes a player from the list
      * @param {String} login 
      */
-    removePlayer(login) : void
+    removePlayer(login : String) : void
 
     /**
      * Adds a player to the list
      * @param {PlayerInfo} player 
      */
-    addPlayer(player) : void
+    addPlayer(player : PlayerInfo) : void
 
     /**
      * Returns a player from the list, based on the player's login
      * @param player player login
      */
-    getPlayer(player) : PlayerInfo
+    getPlayer(player : String) : PlayerInfo
+
+    /**
+     * Returns if a player with a given login is online
+     * @param {String} login 
+     * @returns {Boolean} true if online
+     */
+    playerOnline(login : String) : Boolean
 
     /**
      * Returns, whether the current mode script supports time extension or not.
@@ -585,28 +592,28 @@ export class Jukebox {
     /**
      * Adds a map to the end of the queue
      * @param {Map} map Map to be jukeboxed
-     * @param {String} login Acting player's login
+     * @param {PlayerInfo} player Acting player's info
      */
-    queueMap(map, login) : void
+    queueMap(map, player) : void
 
     /**
      * Adds a map to the front of the queue
      * @param {Map} map Map to be jukeboxed
-     * @param {String} login Acting player's login
+     * @param {PlayerInfo} player Acting player's info
      */
-    priorityAdd(map, login) : void
+    priorityAdd(map, player) : void
 
     /**
      * Returns the next map from the Queue and unqueues it
-     * @returns {JukeboxEntry | Boolean} Entry in the queue or false if the queue is empty
+     * @returns {JukeboxEntry} Entry in the queue or false if the queue is empty
      */
-    unqueueMap() : JukeboxEntry | Boolean
+    unqueueMap() : JukeboxEntry
 
     /**
-     * Returns the number of currently jukeboxed tracks
-     * @returns {Number} Queue length
+     * Returns whether the Jukebox is empty or not
+     * @returns {Boolean} true if empty
      */
-    queueLength() : Number
+    isEmpty() : Boolean
 
 }
 
@@ -618,9 +625,9 @@ export class JukeboxEntry {
     /**
      * Constructs an entry for the Jukebox queue
      * @param map Map info
-     * @param login Login of the player entering a jukebox wish
+     * @param player PlayerInfo of the player submitting a jukebox wish
      */
-    constructor(map : Map, login : String)
+    constructor(map : Map, player : PlayerInfo)
 
     /**
      * Wished map
@@ -630,6 +637,6 @@ export class JukeboxEntry {
     /**
      * Wishing player
      */
-    login : String
+    player : PlayerInfo
 
 }

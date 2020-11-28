@@ -26,19 +26,9 @@ export class NextControl {
     client : Client
 
     /**
-     * GBXremote client wrapper object, containing varous functions for commonly used xml-rpc methods
-     */
-    clientWrapper : ClientWrapper
-
-    /**
      * MongoDB client object, accessing the controller's specified database
      */
     database : Db
-
-    /**
-     * MongoDB client wrapper object, containing various functions for commonly done queries and actions
-     */
-    databaseWrapper : DatabaseWrapper
 
     /**
      * Flag will be set to true, once the class instance is ready for listening.

@@ -38,13 +38,13 @@ export class NextControl {
          * List containing an array of PlayerInfos from a previous query. Key is the player login starting a query before.
          * @type {Map<string, Array<Classes.PlayerInfo>>}
          */
-        players = new Map(),
+        players: undefined,
 
         /**
          * List containing an array of Maps from a previous query. Key is the player login starting a query before.
          * @type {Map<string, Array<Classes.Map>>}
          */
-        maps = new Map()
+        maps: undefined
     }
 
     /**
@@ -55,7 +55,10 @@ export class NextControl {
     /**
      * Do not instatiate this class yourself, the only existing object should be passed around by the object itself!
      */
-    constructor () { /* poo poo */ }
+    constructor () {
+        this.lists.players = new Map();
+        this.lists.maps = new Map();
+     }
 
     /**
      * Prepares NextControl to be ready for use
@@ -221,10 +224,12 @@ export class NextControl {
                         logger('r', login + ' used command /admin ' + adminCommand + ' with parameters: ' + adminParams);
 
                         this.adminCommands.forEach(commandDefinition => {
-                            if (commandDefinition.commandName === adminCommand) 
-                                commandDefinition.commandHandler(
-                                    login, adminParams, this
-                                );
+                            if (commandDefinition.commandName === adminCommand) {
+                                this.plugins.forEach(plugin => {
+                                    if (plugin.name == commandDefinition.pluginName)
+                                        plugin[commandDefinition.commandHandler.name](login, adminParams, this);
+                                })
+                            }
                         });
                     }
                     
@@ -233,10 +238,13 @@ export class NextControl {
                         logger('r', login + ' used command /' + command + ' with parameters: ' + params);
 
                         this.chatCommands.forEach(commandDefinition => {
-                            if (commandDefinition.commandName === command)
-                                commandDefinition.commandHandler(
-                                    login, params.split(' '), this
-                                );
+                            if (commandDefinition.commandName === command) {
+                                this.plugins.forEach(plugin => {
+                                    if (plugin.name == commandDefinition.pluginName) {
+                                        plugin[commandDefinition.commandHandler.name](login, splitCommand, this);
+                                    }
+                                })
+                            }
                         });
                     }
                 }

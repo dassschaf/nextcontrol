@@ -332,7 +332,7 @@ export class ChatCommand {
     /**
      * function handling the chat command
      */
-    commandHandler : (params : ChatCommandParameters, nextcontrol : NextControl) => void
+    commandHandler : (login : string, paramy : Array<string>, nextcontrol : NextControl) => void
 
     /**
      * command description, as displayed in the commands help

@@ -6,7 +6,7 @@ import { NextControl } from '../nextcontrol.js';
 /**
  * Constants for communication about the used lists;
  */
-const MAPS_L = 'MAPS_L', PLAYERS_L = 'PLAYERS_L';
+const cmaps = 'MAPS_L', cplayer = 'PLAYERS_L';
 
 /**
  * Number of items per printed list page
@@ -45,26 +45,16 @@ export class ListsPlugin {
      * @param {NextControl} nc 
      */
     async listCommand(login, params, nc) {
-
         // get list category
         let task = params.shift();
 
-        switch(task) {
-            case 'maps':
-            case 'map':
-                await this.list_maps(login, params, nc);
-                break;
+        if (task === 'maps' || task === 'map') {
+            await this.maps(login, params, nc);
+        } else if (task === 'players' || task === 'player') {
 
-            case 'players':
-            case 'player':
-                //todo
-                break;
+        } else if (task === 'show') {
 
-            case 'show':
-                //todo
-                break;
         }
-
     }
 
     /**
@@ -73,8 +63,7 @@ export class ListsPlugin {
      * @param {Array<String>} params 
      * @param {NextControl} nc 
      */
-    async list_maps(login, params, nc) {
-
+    async maps(login, params, nc) {
         if (params.length == 0) {
             /**
              * @type {Array<Classes.Map>}
@@ -85,9 +74,8 @@ export class ListsPlugin {
             nc.lists.maps.set(login, maps);
 
             // write the list to chat
-            await this.printList(login, MAPS_L, 1, nc);
+            await this.toChat(login, cmaps, 1, nc);
         }
-
     }
 
     /**
@@ -96,8 +84,8 @@ export class ListsPlugin {
      * @param {Array<String>} params 
      * @param {NextControl} nc 
      */
-    async list_players(login, params, nc) {
-
+    async players(login, params, nc) {
+        return;
     }
 
     /**
@@ -106,8 +94,8 @@ export class ListsPlugin {
      * @param {Array<String>} params 
      * @param {NextControl} nc 
      */
-    async list_show(login, params, nc) {
-
+    async show(login, params, nc) {
+        return;
     }
 
     /**
@@ -117,9 +105,9 @@ export class ListsPlugin {
      * @param {Number} pageNr Page # to be shown
      * @param {NextControl} nc
      */
-    async printList(login, list, pageNr, nc) {
+    async toChat(login, list, pageNr, nc) {
         
-        if (list === MAPS_L) {
+        if (list === cmaps) {
             // print maps list for player $login
 
             let items = nc.lists.maps.get(login),
@@ -134,11 +122,9 @@ export class ListsPlugin {
             await nc.client.query('ChatSendServerMessageToLogin', [message, login]);
         }
 
-        if (list === PLAYERS_L) {
+        if (list === cplayer) {
             // print players list for player $login
 
         }
     }
-
-    
 }

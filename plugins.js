@@ -5,6 +5,7 @@ import { SamplePlugin } from './plugins/sample.js';
 import { Join } from './plugins/join.js';
 import { LocalRecords } from './plugins/localRecords.js';
 import { AdminSuite } from './plugins/admin.js';
+import { ListsPlugin } from './plugins/list.js';
 
 // to add another plugin, uncomment and adjust this line:
 // import { PluginClass } from './path/to/file.js';
@@ -18,7 +19,8 @@ export function getPluginList(nextcontrol) {
         new SamplePlugin(nextcontrol),
         new Join(nextcontrol),
         new LocalRecords(nextcontrol),
-        new AdminSuite(nextcontrol)
+        new AdminSuite(nextcontrol),
+        new ListsPlugin(nextcontrol)
 
         // to add another plugin, add a plugin instance to this array:
         // new PluginClass(nextcontrol)

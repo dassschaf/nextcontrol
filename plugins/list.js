@@ -50,10 +50,12 @@ export class ListsPlugin {
 
         if (task === 'maps' || task === 'map') {
             await this.maps(login, params, nc);
+            await this.show(login, ['maps', 1], nc);
         } else if (task === 'players' || task === 'player') {
-
+            await this.players(login, params, nc);
+            await this.show(login, ['players', 1], nc);
         } else if (task === 'show') {
-
+            await this.show(login, params, nc);
         }
     }
 
@@ -72,9 +74,28 @@ export class ListsPlugin {
 
             // write maps array to the player's list:
             nc.lists.maps.set(login, maps);
+            return;
+        }
+    }
 
-            // write the list to chat
-            await this.toChat(login, cmaps, 1, nc);
+    /**
+     * Queries the server for the current player list
+     * @param {String} login 
+     * @param {Array<String>} params 
+     * @param {NextControl} nc 
+     */
+    async players(login, params, nc) {
+        if (params.length == 1 && params[0] == 'online' || params.length == 0) {
+            let players = await nc.client.query('GetPlayerList', [1000, 0, 1]);
+            
+            players.forEach((player, i) => {players[i] = new Classes.PlayerInfo(player)});
+
+            nc.lists.players.set(login, players);
+            return;
+        } else if (params.length == 1 && ['db', 'database'].includes(params[0])) {
+            let players = await nc.database.collection('players').find().toArray();
+
+            nc.lists.players.set(login, players)
         }
     }
 
@@ -84,18 +105,21 @@ export class ListsPlugin {
      * @param {Array<String>} params 
      * @param {NextControl} nc 
      */
-    async players(login, params, nc) {
-        return;
-    }
-
-    /**
-     * Queries the database for maps after a search query or returns a full list
-     * @param {String} login 
-     * @param {Array<String>} params 
-     * @param {NextControl} nc 
-     */
     async show(login, params, nc) {
-        return;
+        // abort for invalid parameters
+        if (params.length < 2 || !(['maps', 'players'].includes(params[0]))) { nc.client.query('ChatSendServerMessageToLogin', [Sentences.lists.showInvalidParams, login]); return; }
+
+        let mode = params[0],
+            page = (params[1] != undefined) ? params[1] : 1;
+
+        if (mode == 'maps') {
+            if (!nc.lists.maps.has(login)) { await this.maps(login, [], nc); }
+            this.toChat(login, cmaps, page, nc);
+
+        } else if (mode == 'players') {
+            if (!nc.lists.players.has(login)) await this.players(login, [], nc);
+            this.toChat(login, cplayer, page, nc);
+        }
     }
 
     /**
@@ -125,6 +149,16 @@ export class ListsPlugin {
         if (list === cplayer) {
             // print players list for player $login
 
+            let items = nc.lists.players.get(login),
+                lowerBound = (pageNr - 1) * ITEMS,
+                upperBound = pageNr * ITEMS,
+                message = util.format(Sentences.lists.header, {type: 'Players', pg: pageNr, pages: Math.ceil(items.length / ITEMS)});
+
+            items = items.slice(lowerBound, upperBound);
+
+            items.forEach((item, i) => message += '\n' + util.format(Sentences.lists.playerItem, {id: i, name: item.name, login: item.login}));
+
+            await nc.client.query('ChatSendServerMessageToLogin', [message, login]);
         }
     }
 }

@@ -186,8 +186,13 @@ export class NextControl {
                 this.plugins.forEach(plugin => { if (typeof plugin.onPlayerConnect != "undefined")  plugin.onPlayerConnect(p, isSpectator, this) });
 
             } else if (method === 'ManiaPlanet.PlayerDisconnect') {
-                let player = this.status.getPlayer(String(para[0])),
+                let player = this.status.getPlayer(String(para[0])), //<- playerInfo
                     reason = String(para[1]);
+
+                // clear temporarily stored lists for the leaving player
+                Object.keys(this.lists).forEach(key => {
+                    if (this.lists[key].has(player.login)) this.lists[key].delete(player.login);
+                });
 
                 // start player disconnect handlers
                 this.plugins.forEach(plugin => { if (typeof plugin.onPlayerDisconnect != "undefined")  plugin.onPlayerDisconnect(player, reason, this) });

@@ -291,32 +291,6 @@ export class NextControl {
             } else if (method === 'ManiaPlanet.EndMatch') {
                 p = new CallbackParams.MatchResults(para);
 
-                // jukebox stuff
-                if (!this.jukebox.isEmpty()) {
-
-                    let entry = this.jukebox.unqueueMap(),
-                        abort = false;
-
-                    while (!this.status.playerOnline(entry.player.login) && !abort) {
-                        // skip jukebox submission:
-                        await this.client.query('ChatSendServerMessage', [format(Sentences.jukebox.leftSkipWish, {name: entry.player.name, map: entry.map.name})]);
-                        logger('r', `Jukebox: Skipping queue entry for map ${stripFormatting(entry.map.name)} as requested by ${entry.player.name} because player left.`);
-                
-                        if (!this.jukebox.isEmpty())
-                            entry = this.jukebox.unqueueMap();
-
-                        else
-                            abort = true;
-                    }
-                    
-                    if (!abort) {
-                        await this.client.query('SetNextMapIdent', [entry.map.uid]);
-                        await this.client.query('ChatSendServerMessage', [format(Sentences.jukebox.nextMapIs, {name: entry.player.name, map: entry.map.name})]);
-
-                        logger('r', `Jukebox: Set next map to ${stripFormatting(entry.map.name)} as requested by ${entry.player.name}`);
-                    }
-                }
-
                 this.plugins.forEach(plugin => { if (typeof plugin.onEndMatch != "undefined") plugin.onEndMatch(p, this) });
 
             } else if (method === 'ManiaPlanet.MapListModified') {

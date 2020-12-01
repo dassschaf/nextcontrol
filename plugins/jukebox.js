@@ -2,7 +2,7 @@ import { NextControl } from '../nextcontrol.js'
 import { MatchResults } from '../lib/callbackparams.js';
 import { Sentences } from '../lib/sentences.js';
 import * as Classes from '../lib/classes.js';
-import { logger, stripFormatting, isNum } from '../lib/utilities.js';
+import { logger, stripFormatting, format } from '../lib/utilities.js';
 
 export class JukeboxPlugin {
     name = 'Jukebox'
@@ -40,17 +40,17 @@ export class JukeboxPlugin {
         // check if map query list is empty:
         if (this.nextcontrol.lists.maps.has(login) && this.nextcontrol.lists.maps.get(login).length > 0) {
 
+            let id = Number(params[0]);
+
             // check if valid number
-            if (isNum(params[0])) {
+            if (id == NaN) {
                 await this.nextcontrol.client.query('ChatSendServerMessageToLogin', [Sentences.jukebox.invalidNumber, login]);
                 return;
             }
 
-            let id = Number(params[0]);
-
             // check if valid index
-            if (this.nextcontrol.lists.maps.get(login).length > id - 1) {
-                await this.nextcontrol.client.query('ChatSendServerMessageToLogin', [Sentences.jukebox.invalidIndex, login]);
+            if (this.nextcontrol.lists.maps.get(login).length < id - 1) {
+                await this.nextcontrol.client.query('ChatSendServerMessageToLogin', [format(Sentences.jukebox.invalidIndex, {lo: 0, hi: this.nextcontrol.lists.maps.get(login).length - 1}), login]);
                 return;
             }
             
@@ -58,6 +58,7 @@ export class JukeboxPlugin {
                 player = this.nextcontrol.status.getPlayer(login);
 
             this.nextcontrol.jukebox.queueMap(map, player);
+            await this.nextcontrol.client.query('ChatSendServerMessage', [format(Sentences.jukebox.hasQueued, {name: this.nextcontrol.status.getPlayer(login).name, map: map.name})]);
             logger('r', `Jukebox: ${stripFormatting(player.name)} has successfully jukeboxed track ${stripFormatting(map.name)}.`);
 
         } else {
@@ -78,7 +79,7 @@ export class JukeboxPlugin {
             let entry = this.nextcontrol.jukebox.unqueueMap(),
                 abort = false;
 
-            while (!this.nextcontrol.status.playerOnline(entry.player.login) && !abort) {
+            /*while (!this.nextcontrol.status.playerOnline(entry.player.login) && !abort) {
                 // skip jukebox submission:
                 await this.nextcontrol.client.query('ChatSendServerMessage', [format(Sentences.jukebox.leftSkipWish, {name: entry.player.name, map: entry.map.name})]);
                 logger('r', `Jukebox: Skipping queue entry for map ${stripFormatting(entry.map.name)} as requested by ${entry.player.name} because player left.`);
@@ -88,7 +89,7 @@ export class JukeboxPlugin {
 
                 else
                     abort = true;
-            }
+            }*/
             
             if (!abort) {
                 await this.nextcontrol.client.query('SetNextMapIdent', [entry.map.uid]);

@@ -594,14 +594,14 @@ export class Jukebox {
      * @param {Map} map Map to be jukeboxed
      * @param {PlayerInfo} player Acting player's info
      */
-    queueMap(map, player) : void
+    queueMap(map : Map, player : PlayerInfo) : void
 
     /**
      * Adds a map to the front of the queue
      * @param {Map} map Map to be jukeboxed
      * @param {PlayerInfo} player Acting player's info
      */
-    priorityAdd(map, player) : void
+    priorityAdd(map : Map, player : PlayerInfo) : void
 
     /**
      * Returns the next map from the Queue and unqueues it

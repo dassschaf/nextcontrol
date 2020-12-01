@@ -67,6 +67,11 @@ export class NextControl {
     }
 
     /**
+     * Jukebox
+     */
+    jukebox : Classes.Jukebox
+
+    /**
      * Registers a chat command to be used
      * @param commandDefinition Object containing the definitions for the command
      */

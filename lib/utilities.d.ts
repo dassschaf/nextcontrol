@@ -39,3 +39,9 @@ export function msToString(ms : Number) : string
  * @param d number
  */
 export function nth(d : Number) : string
+
+/**
+ * Determines whether a given string can be understood as a number or not
+ * @param str Input string
+ */
+export function isNum (str : String) : boolean

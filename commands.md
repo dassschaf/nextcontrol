@@ -12,5 +12,4 @@ Admin commands are generally executed by sending a chat message like `/admin com
 | add | {local/url/tmx} {Source} | Adds a track to the maplist and saves the maplist. Using parameter local, specify the file path *relative* to /UserData/Maps/. Using parameter url, just paste the full URL to the chat command. Using parameter tmx, give the ID of the track on TMX. |
 | skip | - | Skips the current track. |
 | restart | - | Restarts the current track. |
-|---------|-------------|------------|
 | shutdown | - | Shuts down Nextcontrol... but why would you do that? |

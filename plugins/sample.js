@@ -28,6 +28,12 @@ export class SamplePlugin {
     description    = 'Heavily documented sample plugin, allowing you to jump immediately into plugin development'
 
     /**
+     * Local reference to the main instance
+     * @type {NextControl}
+     */
+    nextcontrol
+
+    /**
      * Constructor, registering the chat commands at the main class upon plugin loading
      * @param {NextControl} nextcontrol The script's brain we require to properly register the chat commands
      */
@@ -62,38 +68,42 @@ export class SamplePlugin {
             this.name
         ));
 
+        // save the reference to the main class instance
+        this.nextcontrol = nextcontrol;
     }
 
     /**
      * Hello World chat command!
      * @param {String} login Login of the player calling this command
      * @param {Array<String>} params Parameters passed by the player after the command (seperated by space)
-     * @param {NextControl} nextcontrol main class instance
      */
-    async commandHelloWorld(login, params, nextcontrol) {
+    async commandHelloWorld(login, params) {
         
         // For allowed queries, look up the XML-RPC methods for the
         // TM2/020 dedicated server: https://doc.maniaplanet.com/dedicated-server/references/xml-rpc-methods
 
-        nextcontrol.client.query('ChatSendServerMessageToLogin', ['$f00Hello World!', login]);
+        this.nextcontrol.client.query('ChatSendServerMessageToLogin', ['$f00Hello World!', login]);
     }
 
     /**
      * Hello World chat command for admins!
      * @param {String} login Login of the player calling this command
      * @param {Array<String>} params Parameters passed by the player after the command (seperated by space)
-     * @param {NextControl} nextcontrol main class instance
      */
-    async commandAdminHelloWorld(login, params, nextcontrol) {
-        nextcontrol.client.query('ChatSendServerMessageToLogin', ['$f0fHello World!', login]);
+    async commandAdminHelloWorld(login, params) {
+
+        // to access the main class instance, refer to this.nextcontrol, as the reference is stored there
+        // if another plugin does something or information in that object is updated, it's visible here too
+        // as we saved the reference we got passed in the constructor.
+
+        this.nextcontrol.client.query('ChatSendServerMessageToLogin', ['$f0fHello World!', login]);
     }
 
     /**
      * Function run, whenever a player passes a waypoint (finish, multilap, checkpoint, ...)
      * @param {Classes.WaypointInfo} waypointInfo
-     * @param {NextControl} nextcontrol 
      */
-    async onWaypoint(waypointInfo, nextcontrol) {
+    async onWaypoint(waypointInfo) {
 
     }
 
@@ -101,9 +111,8 @@ export class SamplePlugin {
      * Function run, when a player joins the server
      * @param {Classes.PlayerInfo} player Player info
      * @param {Boolean} isSpectator whether player spectates or not
-     * @param {NextControl} nextcontrol main class instance
      */
-    async onPlayerConnect(player, isSpectator, nextcontrol) { 
+    async onPlayerConnect(player, isSpectator) { 
 
     }
 
@@ -112,9 +121,8 @@ export class SamplePlugin {
      * DO NOT use this for handling commands, those are supposed to be registered at the main class
      * @param {String} login Player's login
      * @param {String} text Message text
-     * @param {NextControl} nextcontrol main class instance
      */
-    async onChat(login, text, nextcontrol) {
+    async onChat(login, text) {
 
     }
 
@@ -122,143 +130,127 @@ export class SamplePlugin {
      * Function run, when a player disconnects
      * @param {Classes.PlayerInfo} player Playerinfo of leaving player 
      * @param {String} reason Reason for disconnection
-     * @param {NextControl} nextcontrol main object
      */
-    async onPlayerDisconnect(player, reason, nextcontrol) {
+    async onPlayerDisconnect(player, reason) {
 
     }
 
     /**
      * Function run, when a new map begins
      * @param {Classes.Map} params Callback parameters
-     * @param {NextControl} nextcontrol main class instance
      */
-    async onBeginMap(params, nextcontrol) {
+    async onBeginMap(params) {
 
     }
 
     /**
      * Function run, when a new match begins
-     * @param {NextControl} nextcontrol main class instance
      */
-    async onBeginMatch(nextcontrol) {
+    async onBeginMatch() {
 
     }
 
     /**
      * Function run, when a started transaction's bill is updated
      * @param {CallbackParams.UpdatedBill} params Callback parameters
-     * @param {NextControl} nextcontrol main class instance
      */
-    async onBillUpdate(params, nextcontrol) {
+    async onBillUpdate(params) {
 
     }
 
     /**
      * Function run, when a map ends
      * @param {Classes.Map} params Callback parameters
-     * @param {NextControl} nextcontrol main class instance
      */
-    async onEndMap(params, nextcontrol) {
+    async onEndMap(params) {
 
     }
 
     /**
      * Function run, when a match ends
      * @param {CallbackParams.MatchResults} params Callback parameters
-     * @param {NextControl} nextcontrol main class instance
      */
-    async onEndMatch(params, nextcontrol) {
+    async onEndMatch(params) {
 
     }
 
     /**
      * Function run, when the maplist changes
      * @param {CallbackParams.MaplistChange} params Callback parameters
-     * @param {NextControl} nextcontrol main class instance
      */
-    async onMaplistChange(params, nextcontrol) {
+    async onMaplistChange(params) {
 
     }
 
     /**
      * Function run, when a gamemode script triggers a callback
      * @param {CallbackParams.ModeScriptCallback} params Callback parameters
-     * @param {NextControl} nextcontrol main class instance
      */
-    async onModeScriptCallback(params, nextcontrol) {
+    async onModeScriptCallback(params,) {
 
     }
 
     /**
      * Function run, when a player switches teams (??)
      * @param {string} login Player's login
-     * @param {NextControl} nextcontrol main class instance
      */
-    async onPlayersAlliesChange(login, nextcontrol) {
+    async onPlayersAlliesChange(login) {
 
     }
 
     /**
      * Function run, when a player's info changes
      * @param {Classes.PlayerInfo} params Callback parameters
-     * @param {NextControl} nextcontrol main class instance
      */
-    async onPlayerInfoChange(params, nextcontrol) {
+    async onPlayerInfoChange(params) {
 
     }
 
     /**
      * Function run, when a player interacts with a displayed manialink
      * @param {CallbackParams.ManialinkPageAnswer} params Callback parameters
-     * @param {NextControl} nextcontrol main class instance
      */
-    async onManialinkPageAnswer(params, nextcontrol) {
+    async onManialinkPageAnswer(params) {
 
     }
 
     /**
      * Function run, when the server transitions from one state to another
      * @param {Classes.ServerStatus} params Server Status object
-     * @param {NextControl} nextcontrol main class instance
      */
-    async onStatusChange(params, nextcontrol) {
+    async onStatusChange(params) {
         
     }
 
     /**
      * Function run, when the server recieves data from a player, transmitted as base64 encoded
      * @param {CallbackParams.TunnelData} params Callback params
-     * @param {NextControl} nextcontrol main class instance
      */
-    async onTunnelDataRecieved(params, nextcontrol) {
+    async onTunnelDataRecieved(params) {
 
     }
 
     /**
      * Function run, when a callvote is updated
      * @param {Classes.CallVote} params Callback params
-     * @param {NextControl} nextcontrol main class instance
      */
-    async onVoteUpdate(params, nextcontrol) {
+    async onVoteUpdate(params) {
 
     }    
 
     /**
      * Function run, when a player passes a checkpoint (be careful, this one might happen very often!)
      * @param {CallbackParams.PlayerCheckpoint} params Callback params
-     * @param {NextControl} nextcontrol main class instance
      */
-    async onCheckpoint(params, nextcontrol) {
+    async onCheckpoint(params) {
 
     }
 
     /**
      * Function run, when a player's run in invalidated
      * @param {CallbackParams.PlayerIncoherence} params Callback params
-     * @param {NextControl} nextcontrol main class instance
      */
-    async onIncoherence(params, nextcontrol) {
+    async onIncoherence(params) {
 
     }
 

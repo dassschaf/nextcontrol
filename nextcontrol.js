@@ -170,7 +170,7 @@ export class NextControl {
             if (method === 'Trackmania.Event.WayPoint') {
                 p = new Classes.WaypointInfo(p);
 
-                this.plugins.forEach(plugin => { if (typeof plugin.onWaypoint != "undefined") plugin.onWaypoint(p, this); })
+                this.plugins.forEach(plugin => { if (typeof plugin.onWaypoint != "undefined") plugin.onWaypoint(p); })
 
             } else if (method === 'ManiaPlanet.PlayerConnect') {
                 let login = String(para[0]);
@@ -183,7 +183,7 @@ export class NextControl {
                 let isSpectator = Boolean(para[1]);
 
                 // start player connect handlers
-                this.plugins.forEach(plugin => { if (typeof plugin.onPlayerConnect != "undefined")  plugin.onPlayerConnect(p, isSpectator, this) });
+                this.plugins.forEach(plugin => { if (typeof plugin.onPlayerConnect != "undefined")  plugin.onPlayerConnect(p, isSpectator) });
 
             } else if (method === 'ManiaPlanet.PlayerDisconnect') {
                 let player = this.status.getPlayer(String(para[0])), //<- playerInfo
@@ -195,7 +195,7 @@ export class NextControl {
                 });
 
                 // start player disconnect handlers
-                this.plugins.forEach(plugin => { if (typeof plugin.onPlayerDisconnect != "undefined")  plugin.onPlayerDisconnect(player, reason, this) });
+                this.plugins.forEach(plugin => { if (typeof plugin.onPlayerDisconnect != "undefined")  plugin.onPlayerDisconnect(player, reason) });
 
                 // remove player from status
                 this.status.removePlayer(player.login);
@@ -210,7 +210,8 @@ export class NextControl {
 
                     let splitCommand = text.substring(1).split(' '),
                         command = splitCommand.shift(),
-                        params = splitCommand.join(' ');
+                        params = splitCommand.join(' '),
+                        player = this.status.getPlayer(login);
 
 
                     if (command == 'admin') {
@@ -226,13 +227,13 @@ export class NextControl {
                             adminCommand = splitAdminCommand.shift(),
                             adminParams = splitAdminCommand;
 
-                        logger('r', login + ' used command /admin ' + adminCommand + ' with parameters: ' + adminParams);
+                        logger('r', stripFormatting(player.name) + ' used command /admin ' + adminCommand + ' with parameters: ' + adminParams);
 
                         this.adminCommands.forEach(commandDefinition => {
                             if (commandDefinition.commandName === adminCommand) {
                                 this.plugins.forEach(plugin => {
                                     if (plugin.name == commandDefinition.pluginName)
-                                        plugin[commandDefinition.commandHandler.name](login, adminParams, this);
+                                        plugin[commandDefinition.commandHandler.name](login, adminParams);
                                 })
                             }
                         });
@@ -240,13 +241,13 @@ export class NextControl {
                     
                     else {
                         // handle regular command
-                        logger('r', login + ' used command /' + command + ' with parameters: ' + params);
+                        logger('r', stripFormatting(player.name) + ' used command /' + command + ' with parameters: ' + params);
 
                         this.chatCommands.forEach(commandDefinition => {
                             if (commandDefinition.commandName === command) {
                                 this.plugins.forEach(plugin => {
                                     if (plugin.name == commandDefinition.pluginName) {
-                                        plugin[commandDefinition.commandHandler.name](login, splitCommand, this);
+                                        plugin[commandDefinition.commandHandler.name](login, splitCommand);
                                     }
                                 })
                             }
@@ -255,7 +256,7 @@ export class NextControl {
                 }
 
                 // regular onChat function        
-                this.plugins.forEach(plugin => { if (typeof plugin.onChat != "undefined") plugin.onChat(login, text, this) });
+                this.plugins.forEach(plugin => { if (typeof plugin.onChat != "undefined") plugin.onChat(login, text) });
 
             } else if (method === 'ManiaPlanet.BeginMap') {
                 p = Classes.Map.fromCallback(para);
@@ -274,56 +275,56 @@ export class NextControl {
                 // update status:
                 this.status.map = p;
 
-                this.plugins.forEach(plugin => { if (typeof plugin.onBeginMap != "undefined") plugin.onBeginMap(p, this) });
+                this.plugins.forEach(plugin => { if (typeof plugin.onBeginMap != "undefined") plugin.onBeginMap(p) });
 
             } else if (method === 'ManiaPlanet.BeginMatch') {
                 // has no parameters
-                this.plugins.forEach(plugin => { if (typeof plugin.onBeginMatch != "undefined") plugin.onBeginMatch(this) });
+                this.plugins.forEach(plugin => { if (typeof plugin.onBeginMatch != "undefined") plugin.onBeginMatch() });
 
             } else if (method === 'ManiaPlanet.BillUpdated') {
                 p = new CallbackParams.UpdatedBill(para);
-                this.plugins.forEach(plugin => { if (typeof plugin.onBillUpdate != "undefined") plugin.onBillUpdate(p, this) });
+                this.plugins.forEach(plugin => { if (typeof plugin.onBillUpdate != "undefined") plugin.onBillUpdate(p) });
 
             } else if (method === 'ManiaPlanet.EndMap') {
                 p = Classes.Map.fromCallback(para);
-                this.plugins.forEach(plugin => { if (typeof plugin.onEndMap != "undefined") plugin.onEndMap(p, this) });
+                this.plugins.forEach(plugin => { if (typeof plugin.onEndMap != "undefined") plugin.onEndMap(p) });
 
             } else if (method === 'ManiaPlanet.EndMatch') {
                 p = new CallbackParams.MatchResults(para);
 
-                this.plugins.forEach(plugin => { if (typeof plugin.onEndMatch != "undefined") plugin.onEndMatch(p, this) });
+                this.plugins.forEach(plugin => { if (typeof plugin.onEndMatch != "undefined") plugin.onEndMatch(p) });
 
             } else if (method === 'ManiaPlanet.MapListModified') {
                 p = new CallbackParams.MaplistChange(para);
-                this.plugins.forEach(plugin => { if (typeof plugin.onMaplistChange != "undefined") plugin.onMaplistChange(p, this) });
+                this.plugins.forEach(plugin => { if (typeof plugin.onMaplistChange != "undefined") plugin.onMaplistChange(p) });
 
             } else if (method === 'ManiaPlanet.PlayerAlliesChanged') {
                 p = para[0]; // = player login
-                this.plugins.forEach(plugin => { if (typeof plugin.onPlayersAlliesChange != "undefined") plugin.onPlayersAlliesChange(p, this) });
+                this.plugins.forEach(plugin => { if (typeof plugin.onPlayersAlliesChange != "undefined") plugin.onPlayersAlliesChange(p) });
 
             } else if (method === 'ManiaPlanet.PlayerInfoChanged') {
                 p = new Classes.PlayerInfo(para[0]);
-                this.plugins.forEach(plugin => { if (typeof plugin.onPlayerInfoChange != "undefined") plugin.onPlayerInfoChange(p, this) });
+                this.plugins.forEach(plugin => { if (typeof plugin.onPlayerInfoChange != "undefined") plugin.onPlayerInfoChange(p) });
 
             } else if (method === 'ManiaPlanet.PlayerManialinkPageAnswer') {
                 p = new CallbackParams.ManialinkPageAnswer(para);
-                this.plugins.forEach(plugin => { if (typeof plugin.onManialinkPageAnswer != "undefined") plugin.onManialinkPageAnswer(p, this) });
+                this.plugins.forEach(plugin => { if (typeof plugin.onManialinkPageAnswer != "undefined") plugin.onManialinkPageAnswer(p) });
 
             } else if (method === 'ManiaPlanet.StatusChanged') {
                 p = Classes.ServerStatus.fromCallback(para);
-                this.plugins.forEach(plugin => { if (typeof plugin.onStatusChange != "undefined") plugin.onStatusChange(p, this) });
+                this.plugins.forEach(plugin => { if (typeof plugin.onStatusChange != "undefined") plugin.onStatusChange(p) });
 
             } else if (method === 'ManiaPlanet.TunnelDataRecieved') {
                 p = new CallbackParams.TunnelData(para);
-                this.plugins.forEach(plugin => { if (typeof plugin.onTunnelDataRecieved != "undefined") plugin.onTunnelDataRecieved(p, this) });
+                this.plugins.forEach(plugin => { if (typeof plugin.onTunnelDataRecieved != "undefined") plugin.onTunnelDataRecieved(p) });
 
             } else if (method === 'ManiaPlanet.VoteUpdated') {
                 p = Classes.CallVote.fromCallback(para);
-                this.plugins.forEach(plugin => { if (typeof plugin.onVoteUpdate != "undefined") plugin.onVoteUpdate(p, this) });
+                this.plugins.forEach(plugin => { if (typeof plugin.onVoteUpdate != "undefined") plugin.onVoteUpdate(p) });
 
             } else if (method === 'TrackMania.PlayerIncoherence') {
                 p = new CallbackParams.PlayerIncoherence(para);
-                this.plugins.forEach(plugin => { if (typeof plugin.onIncoherence != "undefined") plugin.onIncoherence(p, this) });
+                this.plugins.forEach(plugin => { if (typeof plugin.onIncoherence != "undefined") plugin.onIncoherence(p) });
     
             }
         });

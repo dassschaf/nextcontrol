@@ -14,29 +14,37 @@ export class Join {
     description    = 'Join and leave message plugin'
 
     /**
-     * Constructor, registering the chat commands at the main class upon plugin loading
-     * @param {NextControl} nextcontrol The script's brain we require to properly register the chat commands
+     * Local reference to the main instance
+     * @type {NextControl}
      */
-    constructor(nextcontrol) { }
+    nextcontrol
+
+    /**
+     * Constructor, registering the chat commands at the main class upon plugin loading
+     * @param {NextControl} nextcontrol 
+     */
+    constructor(nextcontrol) {
+        // save reference
+        this.nextcontrol = nextcontrol;
+    }
 
     /**
      * Function run, when a player joins the server
      * @param {Classes.PlayerInfo} player Player info
      * @param {Boolean} isSpectator whether player spectates or not
-     * @param {NextControl} nextcontrol main class instance
      */
-    async onPlayerConnect(player, isSpectator, nextcontrol) {                    
+    async onPlayerConnect(player, isSpectator) {                    
         
-        nextcontrol.database.collection('players').updateOne({login: player.login}, {$set: player}, {upsert: true});
+        this.nextcontrol.database.collection('players').updateOne({login: player.login}, {$set: player}, {upsert: true});
 
         if (Settings.admins.includes(player.login)) {
             logger('r','Admin ' + stripFormatting(player.name) + ' has joined the server');
-            nextcontrol.client.query('ChatSendServerMessage', [format(Sentences.adminConnect, { player: player.name })]);
+            this.nextcontrol.client.query('ChatSendServerMessage', [format(Sentences.adminConnect, { player: player.name })]);
         }
 
         else {
             logger('r', stripFormatting(player.name) + ' has joined the server');
-            nextcontrol.client.query('ChatSendServerMessage', [format(Sentences.playerConnect, { player: player.name })]);
+            this.nextcontrol.client.query('ChatSendServerMessage', [format(Sentences.playerConnect, { player: player.name })]);
         }        
     }
 
@@ -44,10 +52,9 @@ export class Join {
      * Function run, when a player disconnects
      * @param {Classes.PlayerInfo} player Playerinfo of leaving player 
      * @param {String} reason Reason for disconnection
-     * @param {NextControl} nextcontrol main object
      */
-    async onPlayerDisconnect(player, reason, nextcontrol) {
+    async onPlayerDisconnect(player, reason) {
         logger('r', stripFormatting(player.name) + ' has left the server, reason: ' + reason);
-        nextcontrol.client.query('ChatSendServerMessage', [format(Sentences.playerDisconnect, { player: player.name })]);
+        this.nextcontrol.client.query('ChatSendServerMessage', [format(Sentences.playerDisconnect, { player: player.name })]);
     }
 }

@@ -10,53 +10,59 @@ export class JukeboxPlugin {
     description = 'Adds jukebox functionality.'
 
     /**
+     * Local reference to the main instance
+     * @type {NextControl}
+     */
+    nextcontrol
+
+    /**
      * 
      * @param {NextControl} nc 
      */
     constructor(nc) {
-        cooldown = new Map();
-
         nc.registerChatCommand(new Classes.ChatCommand('jukebox', this.jukeboxCommand, 'Jukeboxes a map.', this.name));
+
+        // save reference
+        this.nextcontrol = nc;
     }
 
     /**
-     * 
+     * Jukeboxing command
      * @param {String} login 
      * @param {Array<String>} params 
-     * @param {NextControl} nc 
      */
-    async jukeboxCommand(login, params, nc) {
+    async jukeboxCommand(login, params) {
         if (params.length != 1) {
-            await nc.client.query('ChatSendServerMessageToLogin', [Sentences.jukebox.requiresId, login]);
+            await this.nextcontrol.client.query('ChatSendServerMessageToLogin', [Sentences.jukebox.requiresId, login]);
             return;
         }
 
         // check if map query list is empty:
-        if (nc.lists.maps.has(login) && nc.lists.maps.get(login).length > 0) {
+        if (this.nextcontrol.lists.maps.has(login) && this.nextcontrol.lists.maps.get(login).length > 0) {
 
             // check if valid number
             if (isNum(params[0])) {
-                await nc.client.query('ChatSendServerMessageToLogin', [Sentences.jukebox.invalidNumber, login]);
+                await this.nextcontrol.client.query('ChatSendServerMessageToLogin', [Sentences.jukebox.invalidNumber, login]);
                 return;
             }
 
             let id = Number(params[0]);
 
             // check if valid index
-            if (nc.lists.maps.get(login).length > id - 1) {
-                await nc.client.query('ChatSendServerMessageToLogin', [Sentences.jukebox.invalidIndex, login]);
+            if (this.nextcontrol.lists.maps.get(login).length > id - 1) {
+                await this.nextcontrol.client.query('ChatSendServerMessageToLogin', [Sentences.jukebox.invalidIndex, login]);
                 return;
             }
             
-            let map = nc.lists.maps.get(login)[id],
-                player = nc.status.getPlayer(login);
+            let map = this.nextcontrol.lists.maps.get(login)[id],
+                player = this.nextcontrol.status.getPlayer(login);
 
-            nc.jukebox.queueMap(map, player);
+            this.nextcontrol.jukebox.queueMap(map, player);
             logger('r', `Jukebox: ${stripFormatting(player.name)} has successfully jukeboxed track ${stripFormatting(map.name)}.`);
 
         } else {
             // tell the user to first query for maps
-            await nc.client.query('ChatSendServerMessageToLogin', [Sentences.jukebox.requiresList, login]);
+            await this.nextcontrol.client.query('ChatSendServerMessageToLogin', [Sentences.jukebox.requiresList, login]);
             return;
         }
     }
@@ -64,30 +70,29 @@ export class JukeboxPlugin {
     /**
      * Function run on match end to check for Jukebox things
      * @param {MatchResults} results 
-     * @param {NextControl} nc 
      */
-    async onEndMatch(results, nc) {
+    async onEndMatch(results) {
         // jukebox stuff
-        if (!nc.jukebox.isEmpty()) {
+        if (!this.nextcontrol.jukebox.isEmpty()) {
 
-            let entry = nc.jukebox.unqueueMap(),
+            let entry = this.nextcontrol.jukebox.unqueueMap(),
                 abort = false;
 
-            while (!nc.status.playerOnline(entry.player.login) && !abort) {
+            while (!this.nextcontrol.status.playerOnline(entry.player.login) && !abort) {
                 // skip jukebox submission:
-                await nc.client.query('ChatSendServerMessage', [format(Sentences.jukebox.leftSkipWish, {name: entry.player.name, map: entry.map.name})]);
+                await this.nextcontrol.client.query('ChatSendServerMessage', [format(Sentences.jukebox.leftSkipWish, {name: entry.player.name, map: entry.map.name})]);
                 logger('r', `Jukebox: Skipping queue entry for map ${stripFormatting(entry.map.name)} as requested by ${entry.player.name} because player left.`);
         
-                if (!nc.jukebox.isEmpty())
-                    entry = nc.jukebox.unqueueMap();
+                if (!this.nextcontrol.jukebox.isEmpty())
+                    entry = this.nextcontrol.jukebox.unqueueMap();
 
                 else
                     abort = true;
             }
             
             if (!abort) {
-                await nc.client.query('SetNextMapIdent', [entry.map.uid]);
-                await nc.client.query('ChatSendServerMessage', [format(Sentences.jukebox.nextMapIs, {name: entry.player.name, map: entry.map.name})]);
+                await this.nextcontrol.client.query('SetNextMapIdent', [entry.map.uid]);
+                await this.nextcontrol.client.query('ChatSendServerMessage', [format(Sentences.jukebox.nextMapIs, {name: entry.player.name, map: entry.map.name})]);
 
                 logger('r', `Jukebox: Set next map to ${stripFormatting(entry.map.name)} as requested by ${entry.player.name}`);
             }

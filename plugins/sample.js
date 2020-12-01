@@ -28,7 +28,7 @@ export class SamplePlugin {
     description    = 'Heavily documented sample plugin, allowing you to jump immediately into plugin development'
 
     /**
-     * Local reference to the main instance
+     * Local reference to the main class instance
      * @type {NextControl}
      */
     nextcontrol

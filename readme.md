@@ -2,14 +2,21 @@
 A server controller to be used with Trackmania (2020) dedicated servers. Should also work with Trackmania 2 dedicated servers.
 
 ### Requirements
+You need to have those three pieces of software set up and running in order to use Nextcontrol:
 - Node.JS
 - MongoDB
-- Dedicated Server
+- TM Dedicated Server
+
+You can find Node.JS and MongoDB with the search engine of your choice and the TM Dedicated Server and a guide to set up one in the forums related to the game. 
 
 ### Installation
 - extract the files somewhere
 - move to the extracted files and run `npm install`
 - rename `settings-sample.js` to `settings.js` and adjust the file to your setup
+- connect to your MongoDB instance and create following collections with standard settings
+    - players
+    - maps
+    - records
 - run with `node .`
 
 To add admins in TM2020 you currently need to figure out logins manually, for example by opening the editor and saving a track and copy/remember it from the overview screen shown when saving.

@@ -124,6 +124,12 @@ export class AdminSuite {
         // get title and player name
         let player = this.nextcontrol.status.getPlayer(login);
 
+        if (params.length != 2) {
+            // not enough parameters
+            this.nextcontrol.client.query('ChatSendServerMessageToLogin', [Sentences.admin.addInvalidParams, login]);
+            return;
+        }
+
         // parameter order:
         // 1: source: tmx, local, url
         // 2: link or path or id
@@ -169,7 +175,7 @@ export class AdminSuite {
 
             // add track to the map list
             await this.nextcontrol.client.query('InsertMap', [directory + filename]);
-            await this.nextcontrol.client.query('SaveMatchSettings', [nc.status.directories.maps + '/MatchSettings/' + Settings.trackmania.matchsettings_file]);
+            await this.nextcontrol.client.query('SaveMatchSettings', [this.nextcontrol.status.directories.maps + '/MatchSettings/' + Settings.trackmania.matchsettings_file]);
 
             // add track to the database
             await this.nextcontrol.database.collection('maps').insertOne(map);
@@ -194,7 +200,7 @@ export class AdminSuite {
 
             // add track to the map list
             await this.nextcontrol.client.query('InsertMap', [fullPath]);
-            await this.nextcontrol.client.query('SaveMatchSettings', [nc.status.directories.maps + '/MatchSettings/' + Settings.trackmania.matchsettings_file]);
+            await this.nextcontrol.client.query('SaveMatchSettings', [this.nextcontrol.status.directories.maps + '/MatchSettings/' + Settings.trackmania.matchsettings_file]);
 
             // add track to the database
             await this.nextcontrol.database.collection('maps').insertOne(map);

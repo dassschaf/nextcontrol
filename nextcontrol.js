@@ -10,7 +10,6 @@
  */
 import gbxremote from 'gbxremote';
 import mongodb from 'mongodb';
-import beautify from 'json-beautify';
 
 /**
  * Other imports
@@ -48,12 +47,31 @@ export class NextControl {
     }
 
     /**
+     * Chat Commands list
+     * @type {Array<Classes.ChatCommand>}
+     */
+    chatCommands
+
+    /**
+     * Admin Commands list
+     * @type {Array<Classes.ChatCommand>}
+     */
+    adminCommands
+
+    /**
      * Flag will be set to true, once the class instance is ready for listening.
+     * @type {Boolean}
      */
     isReady = false;
 
     /**
-     * Do not instatiate this class yourself, the only existing object should be passed around by the object itself!
+     * Database object
+     * @type {mongodb.Db}
+     */
+    database
+
+    /**
+     * Do not instatiate this class yourself (unless you know what you're doing ;-)), the only existing object should be passed around by the object itself!
      */
     constructor () {
         this.lists.players = new Map();

@@ -21,9 +21,30 @@ export class JukeboxPlugin {
      */
     constructor(nc) {
         nc.registerChatCommand(new Classes.ChatCommand('jukebox', this.jukeboxCommand, 'Jukeboxes a map.', this.name));
+        nc.registerAdminCommand(new Classes.ChatCommand('jukebox', this.jukeboxAdmin, 'Admin jukeboxing command.', this.name));
 
         // save reference
         this.nextcontrol = nc;
+    }
+
+    /**
+     * 
+     * @param {String} login 
+     * @param {Array<String>} params 
+     */
+    async jukeboxAdmin(login, params) {
+        if (params[0] == 'clear') {
+            // clear jukebox:
+            this.nextcontrol.jukebox.reset();
+
+            await this.nextcontrol.client.query('ChatSendServerMessage', [format(Sentences.jukebox.cleared, {name: this.nextcontrol.status.getPlayer(login).name})]);
+            logger('r', `Jukebox: ${stripFormatting(this.nextcontrol.status.getPlayer(login).name)} has cleared the jukebox.`);
+        
+            // if params[1] is a number:
+        } else if (Number(params[0]) != NaN) {
+            // priority jukebox:
+            await this.jukebox(login, params[0], true);            
+        }
     }
 
     /**
@@ -37,10 +58,15 @@ export class JukeboxPlugin {
             return;
         }
 
+        await this.jukebox(login, params[0], false);
+    }
+
+    async jukebox(login, idInput, priority) {
+
         // check if map query list is empty:
         if (this.nextcontrol.lists.maps.has(login) && this.nextcontrol.lists.maps.get(login).length > 0) {
 
-            let id = Number(params[0]);
+            let id = Number(idInput);
 
             // check if valid number
             if (id == NaN) {
@@ -57,9 +83,17 @@ export class JukeboxPlugin {
             let map = this.nextcontrol.lists.maps.get(login)[id],
                 player = this.nextcontrol.status.getPlayer(login);
 
-            this.nextcontrol.jukebox.queueMap(map, player);
-            await this.nextcontrol.client.query('ChatSendServerMessage', [format(Sentences.jukebox.hasQueued, {name: this.nextcontrol.status.getPlayer(login).name, map: map.name})]);
-            logger('r', `Jukebox: ${stripFormatting(player.name)} has successfully jukeboxed track ${stripFormatting(map.name)}.`);
+            if (!priority) {
+                this.nextcontrol.jukebox.queueMap(map, player);
+
+                await this.nextcontrol.client.query('ChatSendServerMessage', [format(Sentences.jukebox.hasQueued, {name: this.nextcontrol.status.getPlayer(login).name, map: map.name})]);
+                logger('r', `Jukebox: ${stripFormatting(player.name)} has successfully jukeboxed track ${stripFormatting(map.name)}.`);
+            } else {
+                this.nextcontrol.jukebox.priorityAdd(map, player);
+
+                await this.nextcontrol.client.query('ChatSendServerMessage', [format(Sentences.jukebox.priorityAdd, {name: this.nextcontrol.status.getPlayer(login).name, map: map.name})]);
+                logger('r', `Jukebox: ${stripFormatting(player.name)} has set next played track to ${stripFormatting(map.name)}.`);
+            }
 
         } else {
             // tell the user to first query for maps
@@ -79,6 +113,7 @@ export class JukeboxPlugin {
             let entry = this.nextcontrol.jukebox.unqueueMap(),
                 abort = false;
 
+            // broken as of now, will fix sometime else
             /*while (!this.nextcontrol.status.playerOnline(entry.player.login) && !abort) {
                 // skip jukebox submission:
                 await this.nextcontrol.client.query('ChatSendServerMessage', [format(Sentences.jukebox.leftSkipWish, {name: entry.player.name, map: entry.map.name})]);

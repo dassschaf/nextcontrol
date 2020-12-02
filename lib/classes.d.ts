@@ -615,6 +615,11 @@ export class Jukebox {
      */
     isEmpty() : Boolean
 
+    /**
+     * Resets the jukebox to be empty
+     */
+    reset() : void 
+
 }
 
 /**

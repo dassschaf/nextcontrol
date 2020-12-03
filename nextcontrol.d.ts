@@ -38,12 +38,12 @@ export class NextControl {
     /**
      * List of registered chat commands
      */
-    chatCommands : Array<ChatCommand>
+    chatCommands : Array<Classes.ChatCommand>
 
     /**
      * List of registered admin chat commands
      */
-    adminChatCommands : Array<ChatCommand>
+    adminChatCommands : Array<Classes.ChatCommand>
 
     /**
      * Current server status

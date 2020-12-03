@@ -95,7 +95,7 @@ export class ServerStatus {
      * Constructs a Server Status object from the callback parameters as given, when Server status changes
      * @param params callback params
      */
-    static fromCallback(params : Array) : ServerStatus
+    static fromCallback(params : Array<any>) : ServerStatus
 }
 
 /**
@@ -178,7 +178,7 @@ export class Map {
      * Constructs a Map object from the callback parameters array
      * @param params callback parameters array
      */
-    static fromCallback(params : Array) : Map
+    static fromCallback(params : Array<any>) : Map
 
     /**
      * Sets the current map's TMX ID, for use when ID is incorrect
@@ -351,35 +351,6 @@ export class ChatCommand {
 }
 
 /**
- * Class representing the information of a chat command
- */
-export class ChatCommandParameters {
-    /**
-     * construct command parameters object
-     * @param uid Unique identifier of the player using the command
-     * @param login Login of the player using the command
-     * @param params Command parameters as entered by the player as string including whitespaces
-     */
-    constructor(uid : string, login : string, params : string)
-
-    /**
-     * Unique identifier of the player using the command
-     */
-    uid : string 
-
-    /**
-     * Login of the player using the command
-     */
-    login : string 
-
-    /**
-     * Command parameters as entered by the player as string including whitespaces
-     */
-    params : string
-}
-
-
-/**
  *  Class representing a local record
  */
 export class LocalRecord {
@@ -389,11 +360,7 @@ export class LocalRecord {
      * @param time record time or score
      * @param track track UID
      */
-    constructor(login : string, time : number, track : string) {
-        this.login = login;
-        this.time = time;
-        this.track = track;
-    }
+    constructor(login : string, time : number, track : string)
 
     /**
      * Player login
@@ -420,7 +387,7 @@ export class Status {
      * initializes the status object
      * @param {NextControl} nc 
      */
-    async init(nc) : void
+    init(nc) : void
 
     /**
      * Removes a player from the list

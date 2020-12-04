@@ -46,7 +46,8 @@ export class AdminSuite {
         nextcontrol.registerAdminCommand(new Classes.ChatCommand('skip', this.admin_skip, 'Skips the current track immediately', this.name));
         nextcontrol.registerAdminCommand(new Classes.ChatCommand('add', this.admin_add, 'Add new tracks to the server from TMX, URL or local path', this.name));
         nextcontrol.registerAdminCommand(new Classes.ChatCommand('shutdown', this.admin_shutdown, 'Shuts down Nextcontrol', this.name));
-        nextcontrol.registerAdminCommand(new Classes.ChatCommand('test', this.testcommand, 'test', this.name));
+        nextcontrol.registerAdminCommand(new Classes.ChatCommand('test', this.testcommand, 'Test command', this.name));
+        nextcontrol.registerAdminCommand(new Classes.ChatCommand('remove', this.admin_remove, 'Removes a selected track', this.name));
 
         this.nextcontrol = nextcontrol;
     }
@@ -89,6 +90,42 @@ export class AdminSuite {
     }
 
     /**
+     * Function removing a selected track from the database and map rotation
+     * @param {String} login 
+     * @param {Array<String>} params 
+     */
+    async admin_remove(login, params) {
+        // check player's list first
+        if (!(this.nextcontrol.lists.maps.has(login) && this.nextcontrol.lists.maps.get(login).length > 0)) {
+            // abort:
+            await this.nextcontrol.client.query('ChatSendServerMessageToLogin', [format(Sentences.admin.requiresList, {type: 'Maps'})]);
+            return;
+        }
+
+        let id = Number(params[0])
+
+        if (isNaN(id)) {
+            // abort:
+            await this.nextcontrol.client.query('ChatSendServerMessageToLogin', [Sentences.admin.invalidParams]);
+            return;
+        }
+
+        let map = this.nextcontrol.lists.maps.get(login)[id];
+
+        // remove database entry
+        await this.nextcontrol.database.collection('maps').deleteOne(map);
+
+        // remove map from map rotation
+        await this.nextcontrol.client.query('RemoveMap', [map.file])
+
+        // save match settings
+        await this.nextcontrol.client.query('SaveMatchSettings', [this.nextcontrol.status.directories.maps + '/MatchSettings/' + Settings.trackmania.matchsettings_file]);
+
+        // send message
+        await this.nextcontrol.client.query('ChatSendServerMessage', [format(Sentences.admin.removed, {name: this.nextcontrol.status.getPlayer(login).name, map: map.name})]);
+    }
+
+    /**
      * Function making the current track being skipped
      * @param {String} login login of the calling player 
      * @param {Array<String>} params parameters of the call
@@ -102,17 +139,16 @@ export class AdminSuite {
     }
 
     /**
-     * Function making the current track being restarted
+     * Shuts down the script.
      * @param {String} login login of the calling player 
      * @param {Array<String>} params parameters of the call
      */
     async admin_shutdown(login, params) {
         // get title and player name
-        let name = this.nextcontrol.status.getPlayer(login).name;
-
         await this.nextcontrol.client.query('ChatSendServerMessage', [`$z$s$ff0~~ $fffShutting down...`]);
+        logger('w', 'Shutting down NextControl upon /admin shutdown!')
 
-        process.exit();
+        process.exit(0);
     }
 
     /**
@@ -124,9 +160,9 @@ export class AdminSuite {
         // get title and player name
         let player = this.nextcontrol.status.getPlayer(login);
 
-        if (params.length != 2) {
+        if (params.length !== 2) {
             // not enough parameters
-            this.nextcontrol.client.query('ChatSendServerMessageToLogin', [Sentences.admin.addInvalidParams, login]);
+            await this.nextcontrol.client.query('ChatSendServerMessageToLogin', [Sentences.admin.invalidParams, login]);
             return;
         }
 
@@ -140,10 +176,10 @@ export class AdminSuite {
         let source = params.shift(),
             link = params.shift();
 
-        if (source.toLocaleLowerCase() == 'tmx') {
+        if (source.toLocaleLowerCase() === 'tmx') {
             
-            if (isNaN(link) || isNaN(parseFloat(link))) {
-                this.nextcontrol.client.query('ChatSendServerMessageToLogin', [Sentences.admin.addTmxFailedInvalidID, player.login]);
+            if (isNaN(Number(link)) || isNaN(parseFloat(link))) {
+                await this.nextcontrol.client.query('ChatSendServerMessageToLogin', [Sentences.admin.addTmxFailedInvalidID, player.login]);
                 return;
             }
 
@@ -174,24 +210,20 @@ export class AdminSuite {
             logger('r', 'Downloaded track ' + stripFormatting(map.name) + ' from TMX');
 
             // add track to the map list
-            await this.nextcontrol.client.query('InsertMap', [directory + filename]);
-            await this.nextcontrol.client.query('SaveMatchSettings', [this.nextcontrol.status.directories.maps + '/MatchSettings/' + Settings.trackmania.matchsettings_file]);
-
-            // add track to the database
-            await this.nextcontrol.database.collection('maps').insertOne(map);
+            await this.addTrackToServer(directory + filename, map)
 
             // send info
             await this.nextcontrol.client.query('ChatSendServerMessage', [format(Sentences.admin.addedTmx, {name: player.name, track: map.name})]);
             logger('r', `${stripFormatting(map.name)} was downloaded from TMX (ID: ${id}) and added to the map list.`);
         }
 
-        if (source.toLocaleLowerCase() == 'local') {
+        if (source.toLocaleLowerCase() === 'local') {
             let directory = this.nextcontrol.status.directories.maps,
                 fullPath = directory + link;
 
             // check if file exists in the first place
             if (!fs.existsSync(fullPath)) {
-                this.nextcontrol.client.query('ChatSendServerMessageToLogin', [Sentences.admin.addLocalFailedInvalidPth, login]);   
+                await this.nextcontrol.client.query('ChatSendServerMessageToLogin', [Sentences.admin.addLocalFailedInvalidPth, login]);
                 return;
             }
 
@@ -199,18 +231,15 @@ export class AdminSuite {
             map.setTMXId(await TMX.getID(map.uid));
 
             // add track to the map list
-            await this.nextcontrol.client.query('InsertMap', [fullPath]);
-            await this.nextcontrol.client.query('SaveMatchSettings', [this.nextcontrol.status.directories.maps + '/MatchSettings/' + Settings.trackmania.matchsettings_file]);
-
-            // add track to the database
-            await this.nextcontrol.database.collection('maps').insertOne(map);
+            // add track to the map list
+            await this.addTrackToServer(fullPath, map)
 
             // send info
             await this.nextcontrol.client.query('ChatSendServerMessage', [format(Sentences.admin.addedLocal, {name: player.name, track: map.name})]);
             logger('r', `Local track ${stripFormatting(map.name)} (${link}) was added to the map list.`);
         }
 
-        if (source.toLocaleLowerCase() == 'url') {
+        if (source.toLocaleLowerCase() === 'url') {
 
             let directory = this.nextcontrol.status.directories.maps + '/URL/',
                 filename = link.split('/').pop();
@@ -234,17 +263,33 @@ export class AdminSuite {
             map.setTMXId(await TMX.getID(map.uid));
 
             // add track to the map list
-            await this.nextcontrol.client.query('InsertMap', [directory + filename]);
-            await this.nextcontrol.client.query('SaveMatchSettings', [nc.status.directories.maps + '/MatchSettings/' + Settings.trackmania.matchsettings_file]);
-
-            // add track to the database
-            await this.nextcontrol.database.collection('maps').insertOne(map);
+            await this.addTrackToServer(directory + filename, map)
 
             // send info
-            await this.nextcontrol.client.query('ChatSendServerMessage', [format(Sentences.admin.addedUrl, {name: player.name, track: map.name})]);
+            await this.nextcontrol.client.query('ChatSendServerMessage', [format(Sentences.admin.addedUrl, {
+                name: player.name,
+                track: map.name
+            })]);
             logger('r', `${stripFormatting(map.name)} was downloaded from URL (${link}) and added to the map list.`);
 
         }
+    }
+
+    /**
+     * Adds a track to the server
+     * @param path {String} absolute! path to the track
+     * @param map {Classes.Map} map object
+     * @returns {Promise<void>}
+     */
+    async addTrackToServer(path, map) {
+        // add track
+        await this.nextcontrol.client.query('InsertMap', [path]);
+
+        // save map settings
+        await this.nextcontrol.client.query('SaveMatchSettings', [this.nextcontrol.status.directories.maps + '/MatchSettings/' + Settings.trackmania.matchsettings_file]);
+
+        // add track to the database
+        await this.nextcontrol.database.collection('maps').insertOne(map);
     }
 
 }

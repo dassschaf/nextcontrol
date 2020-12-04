@@ -277,7 +277,7 @@ export class NextControl {
                 this.plugins.forEach(plugin => { if (typeof plugin.onChat != "undefined") plugin.onChat(login, text) });
 
             } else if (method === 'ManiaPlanet.BeginMap') {
-                p = Classes.Map.fromCallback(para);
+                p = new Classes.Map(para[0]);
 
                 if ((await this.database.collection('maps').countDocuments({uid : p.uid})) > 0)
                     p = await this.database.collection('maps').findOne({uid : p.uid});
@@ -304,7 +304,7 @@ export class NextControl {
                 this.plugins.forEach(plugin => { if (typeof plugin.onBillUpdate != "undefined") plugin.onBillUpdate(p) });
 
             } else if (method === 'ManiaPlanet.EndMap') {
-                p = Classes.Map.fromCallback(para);
+                p = new Classes.Map(para[0]);
                 this.plugins.forEach(plugin => { if (typeof plugin.onEndMap != "undefined") plugin.onEndMap(p) });
 
             } else if (method === 'ManiaPlanet.EndMatch') {
@@ -332,7 +332,7 @@ export class NextControl {
                 p = Classes.ServerStatus.fromCallback(para);
                 this.plugins.forEach(plugin => { if (typeof plugin.onStatusChange != "undefined") plugin.onStatusChange(p) });
 
-            } else if (method === 'ManiaPlanet.TunnelDataRecieved') {
+            } else if (method === 'ManiaPlanet.TunnelDataReceived') {
                 p = new CallbackParams.TunnelData(para);
                 this.plugins.forEach(plugin => { if (typeof plugin.onTunnelDataRecieved != "undefined") plugin.onTunnelDataRecieved(p) });
 

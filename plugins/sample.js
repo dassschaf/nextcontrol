@@ -223,10 +223,10 @@ export class SamplePlugin {
     }
 
     /**
-     * Function run, when the server recieves data from a player, transmitted as base64 encoded
+     * Function run, when the server receives data from a player, transmitted as base64 encoded
      * @param {CallbackParams.TunnelData} params Callback params
      */
-    async onTunnelDataRecieved(params) {
+    async onTunnelDataReceived(params) {
 
     }
 

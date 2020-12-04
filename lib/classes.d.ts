@@ -612,3 +612,70 @@ export class JukeboxEntry {
     player : PlayerInfo
 
 }
+
+/**
+ * Takes care of all sorts of mode settings shenanigans
+ */
+export class ModeSettingsController {
+
+    /**
+     * Default mode settings
+     */
+    defaultSettings
+
+    /**
+     * Temporary settings storage
+     */
+    tempSettings
+
+    /**
+     * Reference to main class instance
+     */
+    nextcontrol
+
+    /**
+     * Sets up the mode settings controller
+     * @param {NextControl} nextcontrol
+     */
+    constructor(nextcontrol : NextControl)
+
+    /**
+     * Shorthand function to immediately extend the current playing time
+     * @param {Number} time in seconds
+     * @returns {Promise<boolean>}
+     */
+    extendTime(time : Number) : Promise<boolean>
+
+    /**
+     * changes a setting for the current track
+     * @param {String }setting Setting name
+     * @param {any} value
+     * @returns {Promise<boolean>}
+     */
+    changeSetting(setting, value) : Promise<boolean>
+
+    /**
+     * Returns whether the timelimit is changable
+     */
+    isTimeExtendable() : boolean
+
+    /**
+     * Resets the temporary settings to the default settings
+     * @returns {Promise<void>}
+     */
+    resetSettings() : Promise<void>
+
+    /**
+     * Applies the current temporary settings to the server
+     * @returns {Promise<void>}
+     */
+    applyTempSettings() : Promise<void>
+
+    /**
+     * Resets a setting in the current temporary settings storage
+     * @param {String} setting
+     * @returns {Promise<boolean>}
+     */
+    resetSetting(setting) : Promise<boolean>
+
+}

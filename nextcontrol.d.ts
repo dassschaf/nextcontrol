@@ -72,6 +72,12 @@ export class NextControl {
     jukebox : Classes.Jukebox
 
     /**
+     * Controller for the gamemode settings
+     * @type {Classes.ModeSettingsController}
+     */
+    modeSettings : Classes.ModeSettingsController
+
+    /**
      * Registers a chat command to be used
      * @param commandDefinition Object containing the definitions for the command
      */

@@ -71,6 +71,12 @@ export class NextControl {
     database
 
     /**
+     * Controller for the gamemode settings
+     * @type {Classes.ModeSettingsController}
+     */
+    modeSettings
+
+    /**
      * Do not instatiate this class yourself (unless you know what you're doing ;-)), the only existing object should be passed around by the object itself!
      */
     constructor () {
@@ -172,6 +178,9 @@ export class NextControl {
 
         // initialize jukebox
         this.jukebox = new Classes.Jukebox();
+
+        // initialize mode settings controller
+        this.modeSettings = new Classes.ModeSettingsController(this);
         
         // start actually listening
         this.client.on('callback', async (method, para) => {
@@ -309,6 +318,9 @@ export class NextControl {
 
             } else if (method === 'ManiaPlanet.EndMatch') {
                 p = new CallbackParams.MatchResults(para);
+
+                // reset mode settings to default
+                await this.modeSettings.resetSettings();
 
                 this.plugins.forEach(plugin => { if (typeof plugin.onEndMatch != "undefined") plugin.onEndMatch(p) });
 

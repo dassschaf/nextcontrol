@@ -145,7 +145,7 @@ export class ListsPlugin {
 
             items = items.slice(lowerBound, upperBound);
 
-            items.forEach((item, i) => message += '\n' + util.format(Sentences.lists.mapItem, {id: i, name: item.name, author: item.author}));
+            items.forEach((item, i) => message += '\n' + util.format(Sentences.lists.mapItem, {id: i + lowerBound, name: item.name, author: item.author}));
 
             await this.nextcontrol.client.query('ChatSendServerMessageToLogin', [message, login]);
         }
@@ -160,7 +160,7 @@ export class ListsPlugin {
 
             items = items.slice(lowerBound, upperBound);
 
-            items.forEach((item, i) => message += '\n' + util.format(Sentences.lists.playerItem, {id: i, name: item.name, login: item.login}));
+            items.forEach((item, i) => message += '\n' + util.format(Sentences.lists.playerItem, {id: i + lowerBound, name: item.name, login: item.login}));
 
             await this.nextcontrol.client.query('ChatSendServerMessageToLogin', [message, login]);
         }

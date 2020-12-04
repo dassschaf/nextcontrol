@@ -48,6 +48,7 @@ export class AdminSuite {
         nextcontrol.registerAdminCommand(new Classes.ChatCommand('shutdown', this.admin_shutdown, 'Shuts down Nextcontrol', this.name));
         nextcontrol.registerAdminCommand(new Classes.ChatCommand('test', this.testcommand, 'Test command', this.name));
         nextcontrol.registerAdminCommand(new Classes.ChatCommand('remove', this.admin_remove, 'Removes a selected track', this.name));
+        nextcontrol.registerAdminCommand(new Classes.ChatCommand('extend', this.admin_extend, 'Extends the play time by a given value (default: 300s).', this.name));
 
         this.nextcontrol = nextcontrol;
     }
@@ -87,6 +88,42 @@ export class AdminSuite {
 
         await this.nextcontrol.client.query('RestartMap');
         await this.nextcontrol.client.query('ChatSendServerMessage', [format(Sentences.admin.restart, {name: name})]);
+    }
+
+    /**
+     * Function extending the currently played track's time
+     * @param {String} login login of the calling player
+     * @param {Array<String>} params parameters of the call
+     */
+    async admin_extend(login, params) {
+        // get title and player name
+        let name = this.nextcontrol.status.getPlayer(login).name,
+            time = 300;
+
+        if (!this.nextcontrol.modeSettings.isTimeExtendable()) {
+            await this.nextcontrol.client.query('ChatSendServerMessageToLogin', [Sentences.admin.cannotExtend, login]);
+            return;
+        }
+
+        // override default time, if time is given
+        if (typeof params[0] !== 'undefined') {
+            if (isNaN(Number(params[0]))) {
+                // abort:
+                await this.nextcontrol.client.query('ChatSendServerMessageToLogin', [Sentences.admin.invalidParams]);
+                return;
+            }
+
+            time = Number(params[0]);
+        }
+
+        if (!await this.nextcontrol.modeSettings.extendTime(time)) {
+            // error!
+            await this.nextcontrol.client.query('ChatSendServerMessageToLogin', [Sentences.admin.extendError, login]);
+
+        } else {
+            await this.nextcontrol.client.query('ChatSendServerMessage', [format(Sentences.admin.extended, {name: this.nextcontrol.status.getPlayer(login).name, time: time})]);
+            logger('r', 'Successfully extended time by ' + time + ' seconds.')
+        }
     }
 
     /**

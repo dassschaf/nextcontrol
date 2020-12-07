@@ -91,7 +91,7 @@ export class NextControl {
         logger('su', 'Starting NextControl...');
 
         // create Trackmania XMLRPC client
-        let client = gbxremote.createClient(5555);
+        let client = gbxremote.createClient(Settings.trackmania.port);
         let serverPromise = new Promise((resolve, reject) => {
             // upon connection
             client.on('connect', async () => {

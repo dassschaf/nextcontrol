@@ -286,18 +286,49 @@ export class NextControl {
                 this.plugins.forEach(plugin => { if (typeof plugin.onChat != "undefined") plugin.onChat(login, text) });
 
             } else if (method === 'ManiaPlanet.BeginMap') {
+                // parse map object
                 p = new Classes.Map(para[0]);
 
+                /**
+                 * copy of the Map object as given by server
+                 * @type {Classes.Map}
+                 */
+                let servMap = JSON.parse(JSON.stringify(p));
+
+                // check if track is in database already
                 if ((await this.database.collection('maps').countDocuments({uid : p.uid})) > 0)
                     p = await this.database.collection('maps').findOne({uid : p.uid});
 
-                else {
+                else { // track isn't in database yet:
                     // find TMX id
                     p.setTMXId(await TMX.getID(p.uid));
 
                     // update database entry
                     await this.database.collection('maps').insertOne(p);
                 }
+
+                let hasChanged = false;
+
+                // check if the map has a set TMX ID
+                if (p.tmxid === -1) {
+                    p.setTMXId(await TMX.getID(p.uid));
+                    hasChanged = true;
+                }
+
+                // check if the map has a set Checkpoint number
+                if (p.nbCheckpoints === -1) {
+                    p.nbCheckpoints = servMap.nbCheckpoints;
+                    hasChanged = true;
+                }
+
+                // check if the map has a set Lap number
+                if (p.nbLaps === -1) {
+                    p.nbLaps = servMap.nbLaps;
+                    hasChanged = true;
+                }
+
+                // update the map document in database, if we have just changed it
+                if (hasChanged) await this.database.collection('maps').updateOne({uid: p.uid}, {$set: p})
 
                 // update status:
                 this.status.map = p;

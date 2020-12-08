@@ -103,6 +103,12 @@ export class ServerStatus {
  */
 export class Map {
     /**
+     * Constructs a new map object
+     * @param struct Struct, as returned from the dedicated server
+     */
+    constructor(struct: any)
+
+    /**
      * Map's unique identifier
      */
     uid : string;
@@ -678,4 +684,13 @@ export class ModeSettingsController {
      */
     resetSetting(setting) : Promise<boolean>
 
+    /**
+     * Saves the current server settings to file
+     */
+    saveSettingsToFile() : Promise<void>
+
+    /**
+     * Saves the current temporary settings as the default settings
+     */
+    keepTempSettings() : void
 }

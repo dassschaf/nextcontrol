@@ -83,6 +83,8 @@ export class ListsPlugin {
             this.nextcontrol.lists.maps.set(login, maps);
             return;
         }
+
+
     }
 
     /**
@@ -92,9 +94,7 @@ export class ListsPlugin {
      */
     async players(login, params) {
         if (params.length == 1 && params[0] == 'online' || params.length == 0) {
-            let players = await this.nextcontrol.client.query('GetPlayerList', [1000, 0, 1]);
-            
-            players.forEach((player, i) => {players[i] = new Classes.PlayerInfo(player)});
+            let players = JSON.parse(JSON.stringify(this.nextcontrol.status.players));
 
             this.nextcontrol.lists.players.set(login, players);
             return;

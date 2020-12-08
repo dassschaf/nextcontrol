@@ -35,16 +35,16 @@ export class Join {
      */
     async onPlayerConnect(player, isSpectator) {                    
         
-        this.nextcontrol.database.collection('players').updateOne({login: player.login}, {$set: player}, {upsert: true});
+        await this.nextcontrol.database.collection('players').updateOne({login: player.login}, {$set: player}, {upsert: true});
 
         if (Settings.admins.includes(player.login)) {
             logger('r','Admin ' + stripFormatting(player.name) + ' has joined the server');
-            this.nextcontrol.client.query('ChatSendServerMessage', [format(Sentences.adminConnect, { player: player.name })]);
+            await this.nextcontrol.client.query('ChatSendServerMessage', [format(Sentences.adminConnect, { player: player.name })]);
         }
 
         else {
             logger('r', stripFormatting(player.name) + ' has joined the server');
-            this.nextcontrol.client.query('ChatSendServerMessage', [format(Sentences.playerConnect, { player: player.name })]);
+            await this.nextcontrol.client.query('ChatSendServerMessage', [format(Sentences.playerConnect, { player: player.name })]);
         }        
     }
 
@@ -55,6 +55,6 @@ export class Join {
      */
     async onPlayerDisconnect(player, reason) {
         logger('r', stripFormatting(player.name) + ' has left the server, reason: ' + reason);
-        this.nextcontrol.client.query('ChatSendServerMessage', [format(Sentences.playerDisconnect, { player: player.name })]);
+        await this.nextcontrol.client.query('ChatSendServerMessage', [format(Sentences.playerDisconnect, { player: player.name })]);
     }
 }

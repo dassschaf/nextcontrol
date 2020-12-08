@@ -90,16 +90,37 @@ export class NextControl {
     async startup() {
         logger('su', 'Starting NextControl...');
 
-        // create Trackmania XMLRPC client
+        // create Trackmania XML-RPC client
         let client = gbxremote.createClient(Settings.trackmania.port);
+
         let serverPromise = new Promise((resolve, reject) => {
+            client.on('error', () => {
+                logger('er', 'Could not connect to server. Check your settings!');
+                process.exit(1);
+            })
+
             // upon connection
             client.on('connect', async () => {
                 // wait for API-Version, Authentication and Callback enabling to succeed, otherwise reject the promise
-                if (!(await client.query('SetApiVersion', ['2019-03-02']))) reject('api');
-                if (!(await client.query('Authenticate', [Settings.trackmania.login, Settings.trackmania.password]))) reject('auth');
-                if (!(await client.query('EnableCallbacks', [true]))) reject('callback');
-                if (!(await client.query('TriggerModeScriptEventArray', ['XmlRpc.EnableCallbacks', ['true']]))) reject('script');
+                await client.query('SetApiVersion', ['2019-03-02']).catch(() => {
+                    logger('er', 'Setting API version failed.');
+                    process.exit(2);
+                });
+
+                await client.query('Authenticate', [Settings.trackmania.login, Settings.trackmania.password]).catch(() => {
+                    logger('er', 'Authentication failed -- check credentials!');
+                    process.exit(3);
+                });
+
+                await client.query('EnableCallbacks', [true]).catch(() => {
+                    logger('er', 'Enabling callbacks failed.');
+                    process.exit(4);
+                });
+
+                await client.query('TriggerModeScriptEventArray', ['XmlRpc.EnableCallbacks', ['true']]).catch(() => {
+                    logger('er', 'Enabling script callbacks failed.');
+                    process.exit(5);
+                });
 
                 // and "return" the functioning client object
                 resolve(client);
@@ -107,27 +128,37 @@ export class NextControl {
         });
 
         // wait for promise
-        await serverPromise;
+        await serverPromise.catch(e => {
+            logger('er', 'Connecting to the server has failed. Check port.');
+            process.exit(6);
+        });
+
         logger('su', 'Connected to Trackmania Server');
 
         // set properties accordingly
         this.client = client;
 
         // woo, we're connected!
-        this.client.query('ChatSendServerMessage', ['$0f0~~ $fffStarting NextControl ...']);
+        await this.client.query('ChatSendServerMessage', ['$0f0~~ $fffStarting NextControl ...']);
 
         // create MongoDB client
         let database = new mongodb.MongoClient(Settings.database.uri, { useNewUrlParser: true, useUnifiedTopology: true });
         
         // wait for database connection
-        await database.connect();
+        await database.connect().catch(e => {
+            logger('er', JSON.stringify(e, null, 2));
+            process.exit(7);
+        });
 
         // set properties accordingly
-        this.database = await database.db(Settings.database.database);
+        this.database = await database.db(Settings.database.database).catch(e => {
+            logger('er', JSON.stringify(e, null, 2));
+            process.exit(8);
+        });
 
         // woo, we're connected!
         logger('su', 'Connected to MongoDB Server');
-        this.client.query('ChatSendServerMessage', ['$0f0~~ $fffConnected to database ...']);
+        await this.client.query('ChatSendServerMessage', ['$0f0~~ $fffConnected to database ...']);
 
         // now lets load plugins:
         this.chatCommands = [];
@@ -161,7 +192,7 @@ export class NextControl {
         // now that we're done:
         this.isReady = true;
         logger('i', 'Startup completed, starting to listen');
-        this.client.query('ChatSendServerMessage', ['$0f0~~ $fffUp and running!']);
+        await this.client.query('ChatSendServerMessage', ['$0f0~~ $fffUp and running!']);
 
         this.startListening();
     }

@@ -68,6 +68,11 @@ export class SamplePlugin {
             this.name
         ));
 
+        // if this plugin requires a collection, that NextControl doesn't provide by itself (e. g. one you need for keeping track of custom statistics or so)
+        // you can set the collection to be necessary at the main object:
+        //
+        // nextcontrol.addRequiredCollection('collectionname')
+
         // save the reference to the main class instance
         this.nextcontrol = nextcontrol;
     }

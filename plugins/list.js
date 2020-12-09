@@ -2,6 +2,7 @@ import { Sentences } from '../lib/sentences.js';
 import * as util from '../lib/utilities.js';
 import * as Classes from '../lib/classes.js';
 import { NextControl } from '../nextcontrol.js';
+import {stripFormatting} from "../lib/utilities.js";
 
 /**
  * Constants for communication about the used lists;
@@ -73,7 +74,7 @@ export class ListsPlugin {
      * @param {Array<String>} params
      */
     async maps(login, params) {
-        if (params.length == 0) {
+        if (params.length === 0) {
             /**
              * @type {Array<Classes.Map>}
              */
@@ -84,7 +85,26 @@ export class ListsPlugin {
             return;
         }
 
+        if (params.length === 1) {
+            /**
+             * @type {Array<Classes.Map>}
+             */
+            let hits = [],
+                maps = await this.nextcontrol.database.collection('maps').find().toArray();
 
+            // make search regex
+            let regex = new RegExp(params[0], 'gi');
+
+            console.log(regex);
+
+            maps.forEach(map => {
+                if (regex.test(stripFormatting(map.name)))
+                    hits.push(map);
+            });
+
+            this.nextcontrol.lists.maps.set(login, hits);
+            return;
+        }
     }
 
     /**

@@ -38,8 +38,8 @@ export class ListsPlugin {
     nextcontrol
 
     /**
-     * 
-     * @param {NextControl} nc 
+     * Constructs the plugin
+     * @param {NextControl} nc
      */
     constructor(nc) {
         nc.registerChatCommand(new Classes.ChatCommand('list', this.listCommand, 'List something for later use!', this.name));
@@ -49,9 +49,9 @@ export class ListsPlugin {
     }
 
     /**
-     * Handles incoming list commands 
-     * @param {String} login 
-     * @param {Array<String>} params 
+     * Handles incoming list commands
+     * @param {String} login
+     * @param {Array<String>} params
      */
     async listCommand(login, params) {
         // get list category
@@ -70,7 +70,7 @@ export class ListsPlugin {
 
     /**
      * Queries the database for maps after a search query or returns a full list
-     * @param {String} login 
+     * @param {String} login
      * @param {Array<String>} params
      */
     async maps(login, params) {
@@ -95,8 +95,6 @@ export class ListsPlugin {
             // make search regex
             let regex = new RegExp(params[0], 'gi');
 
-            console.log(regex);
-
             maps.forEach(map => {
                 if (regex.test(stripFormatting(map.name)))
                     hits.push(map);
@@ -109,7 +107,7 @@ export class ListsPlugin {
 
     /**
      * Queries the server for the current player list
-     * @param {String} login 
+     * @param {String} login
      * @param {Array<String>} params
      */
     async players(login, params) {
@@ -127,7 +125,7 @@ export class ListsPlugin {
 
     /**
      * Queries the database for maps after a search query or returns a full list
-     * @param {String} login 
+     * @param {String} login
      * @param {Array<String>} params
      */
     async show(login, params) {
@@ -154,7 +152,7 @@ export class ListsPlugin {
      * @param {Number} pageNr Page # to be shown
      */
     async toChat(login, list, pageNr) {
-        
+
         if (list === cmaps) {
             // print maps list for player $login
 

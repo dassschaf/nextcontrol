@@ -191,6 +191,12 @@ export class Map {
      * @param id new (correct) ID
      */
     setTMXId(id : number) : void;
+
+    /**
+     * Creates a valid map object from database data
+     * @param map Map struct
+     */
+    static fromDb(map) : Map
 }
 
 /**

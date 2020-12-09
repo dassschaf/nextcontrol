@@ -352,7 +352,7 @@ export class NextControl {
 
                 // check if track is in database already
                 if ((await this.database.collection('maps').countDocuments({uid : p.uid})) > 0)
-                    p = await this.database.collection('maps').findOne({uid : p.uid});
+                    p = Classes.Map.fromDb(await this.database.collection('maps').findOne({uid : p.uid}));
 
                 else { // track isn't in database yet:
                     // find TMX id

@@ -77,6 +77,12 @@ export class NextControl {
     modeSettings
 
     /**
+     * List of required collections that need to exist in the MongoDB database
+     * @type {Array<String>}
+     */
+    requiredCollections = []
+
+    /**
      * Do not instatiate this class yourself (unless you know what you're doing ;-)), the only existing object should be passed around by the object itself!
      */
     constructor () {
@@ -94,6 +100,7 @@ export class NextControl {
         let client = gbxremote.createClient(Settings.trackmania.port);
 
         let serverPromise = new Promise((resolve, reject) => {
+            // check for error
             client.on('error', () => {
                 logger('er', 'Could not connect to server. Check your settings!');
                 process.exit(1);
@@ -101,22 +108,25 @@ export class NextControl {
 
             // upon connection
             client.on('connect', async () => {
-                // wait for API-Version, Authentication and Callback enabling to succeed, otherwise reject the promise
+                // set API version
                 await client.query('SetApiVersion', ['2019-03-02']).catch(() => {
                     logger('er', 'Setting API version failed.');
                     process.exit(2);
                 });
 
+                // authenticate as SuperAdmin
                 await client.query('Authenticate', [Settings.trackmania.login, Settings.trackmania.password]).catch(() => {
                     logger('er', 'Authentication failed -- check credentials!');
                     process.exit(3);
                 });
 
+                // enable callbacks
                 await client.query('EnableCallbacks', [true]).catch(() => {
                     logger('er', 'Enabling callbacks failed.');
                     process.exit(4);
                 });
 
+                // enable script callbacks
                 await client.query('TriggerModeScriptEventArray', ['XmlRpc.EnableCallbacks', ['true']]).catch(() => {
                     logger('er', 'Enabling script callbacks failed.');
                     process.exit(5);
@@ -151,10 +161,12 @@ export class NextControl {
         });
 
         // set properties accordingly
-        this.database = await database.db(Settings.database.database).catch(e => {
-            logger('er', JSON.stringify(e, null, 2));
-            process.exit(8);
-        });
+        this.database = await database.db(Settings.database.database)
+
+        // nextcontrol fundamentally requires these three collections
+        this.addRequiredCollection('players');
+        this.addRequiredCollection('maps');
+        this.addRequiredCollection('records');
 
         // woo, we're connected!
         logger('su', 'Connected to MongoDB Server');
@@ -188,6 +200,18 @@ export class NextControl {
                 adminCList += command.commandName + ', '; else adminCList += command.commandName
         })
         logger('su', 'Admin commands registered: ' + adminCList);
+        
+        // check if all necessary collections exist:
+        let existingCollections = await database.db(Settings.database.database).listCollections({}, {nameOnly: true}).toArray(); // Array of objects {name: '', type: ''}
+        existingCollections = existingCollections.map(item => { return item.name });
+
+        // create missing collections
+        for (const collection of this.requiredCollections) {
+            if (!existingCollections.includes(collection)) {
+                await database.db(Settings.database.database).createCollection(collection);
+                logger('db', `Created missing collection ${collection}`);
+            }
+        }
 
         // now that we're done:
         this.isReady = true;
@@ -448,6 +472,15 @@ export class NextControl {
 
         this.adminCommands.push(comm);
         
+    }
+
+    /**
+     * Registers a collection as required to exist for startup checks
+     * @param {String} collection
+     */
+    addRequiredCollection(collection) {
+        if (!this.requiredCollections.includes(collection))
+            this.requiredCollections.push(collection);
     }
 
 }

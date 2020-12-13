@@ -163,6 +163,66 @@ export class AdminSuite {
     }
 
     /**
+     *
+     * @param {String} login
+     * @param {Array<String>} params
+     * @returns {Promise<void>}
+     */
+    async admin_mode(login, params) {
+        if (params.length == 0) {
+            // not enough parameters
+            await this.nextcontrol.client.query('ChatSendServerMessageToLogin', [Sentences.admin.invalidParams, login]);
+            return;
+        }
+
+        let operation = params.shift();
+
+        if (operation === 'save') {
+            // save to match settings
+            await this.nextcontrol.modeSettings.saveSettingsToFile();
+            await this.nextcontrol.client.query('ChatSendServerMessageToLogin', [Sentences.admin.settingsSaved, login]);
+
+        } else if (operation === 'keep') {
+            // keep this until script/server restart
+            this.nextcontrol.modeSettings.keepTempSettings();
+            await this.nextcontrol.client.query('ChatSendServerMessageToLogin', [Sentences.admin.settingsKept, login]);
+
+        } else if (operation === 'reset') {
+            // reset to current default settings
+            await this.nextcontrol.modeSettings.resetSettings();
+            await this.nextcontrol.client.query('ChatSendServerMessageToLogin', [Sentences.admin.settingsReset, login]);
+
+        } else if (operation === 'read') {
+            // read match settings
+            await this.nextcontrol.modeSettings.readMatchSettings();
+            await this.nextcontrol.client.query('ChatSendServerMessageToLogin', [Sentences.admin.settingsRead, login]);
+
+        } /* else if (operation === 'set') {
+            // currently broken, will fix later.
+
+            // set a mode setting to a value
+            if (params.length === 2) {
+                let setting = params.shift(),
+                    value = params.shift().toString();
+
+                // adjust type of value
+                if (!isNaN(Number(value))) value = Number(value);
+                if (value.toLocaleLowerCase() === 'true' || value.toLocaleLowerCase() === 'false') value = Boolean(value);
+                // else: keep string
+
+                let struct = {};
+                    struct[setting] = value;
+
+                await this.nextcontrol.client.query('SetModeScriptSettings', struct);
+
+            } else {
+                // not enough parameters
+                await this.nextcontrol.client.query('ChatSendServerMessageToLogin', [Sentences.admin.invalidParams, login]);
+            }
+        } */
+    }
+
+    /**
      * Function making the current track being skipped
      * @param {String} login login of the calling player 
      * @param {Array<String>} params parameters of the call

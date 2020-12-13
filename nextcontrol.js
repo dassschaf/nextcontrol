@@ -236,6 +236,7 @@ export class NextControl {
 
         // initialize mode settings controller
         this.modeSettings = new Classes.ModeSettingsController(this);
+        await this.modeSettings.init();
         
         // start actually listening
         this.client.on('callback', async (method, para) => {

@@ -26,4 +26,9 @@ As such, the command isn't `/admin` but rather what follows afterwards.
 | skip | - | Skips the current track. |
 | restart | - | Restarts the current track. |
 | shutdown | - | Shuts down Nextcontrol... but why would you do that? |
-| jukebox | {n/clear} | With parameter *n*, it puts the n-th map from you map list to the front of your jukebox. With parameter *clear* it empties the jukebox.
+| jukebox | {n/clear} | With parameter *n*, it puts the n-th map from you map list to the front of your jukebox. With parameter *clear* it empties the jukebox. |
+| mode | save | Saves the current MatchSettings to file. |
+| mode | keep | Keeps the current temporary game mode settings to prevent discarding them on map change |
+| mode | reset | Resets the game mode settings currently applied at the server|
+| mode | read | Re-reads the MatchSettings file. |
+| extend | {time} | Extends the time for the currently played track by a given number (in seconds) or by default by 300 seconds. Settings reset on map change unless they're specified to be kept. Requires a gamemode to be run, that supports time extension (e. g. Time attack) |

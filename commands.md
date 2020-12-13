@@ -32,3 +32,4 @@ As such, the command isn't `/admin` but rather what follows afterwards.
 | mode | reset | Resets the game mode settings currently applied at the server|
 | mode | read | Re-reads the MatchSettings file. |
 | extend | {time} | Extends the time for the currently played track by a given number (in seconds) or by default by 300 seconds. Settings reset on map change unless they're specified to be kept. Requires a gamemode to be run, that supports time extension (e. g. Time attack) |
+| forcemods | {url/save/read/reset/enable/disable} | To force a mod, only use the URL to the mod as parameter. Enable, disable parameters enable or disable whether a map's mod shall be overridden. Save, read save or read the settings from the settings file (`/settings/forceMods.json`)

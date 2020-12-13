@@ -49,6 +49,7 @@ export class AdminSuite {
         nextcontrol.registerAdminCommand(new Classes.ChatCommand('test', this.testcommand, 'Test command', this.name));
         nextcontrol.registerAdminCommand(new Classes.ChatCommand('remove', this.admin_remove, 'Removes a selected track', this.name));
         nextcontrol.registerAdminCommand(new Classes.ChatCommand('extend', this.admin_extend, 'Extends the play time by a given value (default: 300s).', this.name));
+        nextcontrol.registerAdminCommand(new Classes.ChatCommand('mode', this.admin_mode, 'Various commands to deal with the matchsettings', this.name));
 
         this.nextcontrol = nextcontrol;
     }
@@ -149,14 +150,8 @@ export class AdminSuite {
 
         let map = this.nextcontrol.lists.maps.get(login)[id];
 
-        // remove database entry
-        await this.nextcontrol.database.collection('maps').deleteOne(map);
-
         // remove map from map rotation
         await this.nextcontrol.client.query('RemoveMap', [map.file])
-
-        // save match settings
-        await this.nextcontrol.client.query('SaveMatchSettings', [this.nextcontrol.status.directories.maps + '/MatchSettings/' + Settings.trackmania.matchsettings_file]);
 
         // send message
         await this.nextcontrol.client.query('ChatSendServerMessage', [format(Sentences.admin.removed, {name: this.nextcontrol.status.getPlayer(login).name, map: map.name})]);
@@ -381,9 +376,6 @@ export class AdminSuite {
     async addTrackToServer(path, map) {
         // add track
         await this.nextcontrol.client.query('InsertMap', [path]);
-
-        // save map settings
-        await this.nextcontrol.client.query('SaveMatchSettings', [this.nextcontrol.status.directories.maps + '/MatchSettings/' + Settings.trackmania.matchsettings_file]);
 
         // add track to the database
         await this.nextcontrol.database.collection('maps').insertOne(map);

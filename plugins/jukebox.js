@@ -33,7 +33,7 @@ export class JukeboxPlugin {
      * @param {Array<String>} params 
      */
     async jukeboxAdmin(login, params) {
-        if (params[0] == 'clear') {
+        if (params[0] === 'clear') {
             // clear jukebox:
             this.nextcontrol.jukebox.reset();
 
@@ -41,7 +41,7 @@ export class JukeboxPlugin {
             logger('r', `Jukebox: ${stripFormatting(this.nextcontrol.status.getPlayer(login).name)} has cleared the jukebox.`);
         
             // if params[1] is a number:
-        } else if (Number(params[0]) != NaN) {
+        } else if (!isNaN(Number(params[0]))) {
             // priority jukebox:
             await this.jukebox(login, params[0], true);            
         }
@@ -53,7 +53,7 @@ export class JukeboxPlugin {
      * @param {Array<String>} params 
      */
     async jukeboxCommand(login, params) {
-        if (params.length != 1) {
+        if (params.length !== 1) {
             await this.nextcontrol.client.query('ChatSendServerMessageToLogin', [Sentences.jukebox.requiresId, login]);
             return;
         }
@@ -69,7 +69,7 @@ export class JukeboxPlugin {
             let id = Number(idInput);
 
             // check if valid number
-            if (id == NaN) {
+            if (isNaN(id)) {
                 await this.nextcontrol.client.query('ChatSendServerMessageToLogin', [Sentences.jukebox.invalidNumber, login]);
                 return;
             }
@@ -98,7 +98,6 @@ export class JukeboxPlugin {
         } else {
             // tell the user to first query for maps
             await this.nextcontrol.client.query('ChatSendServerMessageToLogin', [Sentences.jukebox.requiresList, login]);
-            return;
         }
     }
 

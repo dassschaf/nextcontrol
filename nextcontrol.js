@@ -22,6 +22,7 @@ import { Settings } from './settings.js';
 import { Sentences } from './lib/sentences.js';
 import { getPluginList } from './plugins.js'
 import { TMX } from './lib/tmx.js'
+import * as fs from "fs";
 
 
 /**
@@ -171,6 +172,10 @@ export class NextControl {
         // woo, we're connected!
         logger('su', 'Connected to MongoDB Server');
         await this.client.query('ChatSendServerMessage', ['$0f0~~ $fffConnected to database ...']);
+
+        // ensure ./settings/ exists for our plugins
+        if (!fs.existsSync('./settings'))
+            fs.mkdirSync('./settings');
 
         // now lets load plugins:
         this.chatCommands = [];

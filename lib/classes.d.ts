@@ -442,11 +442,6 @@ export class Status {
     players : Array<PlayerInfo>
 
     /**
-     * Gamemode settings
-     */
-    modeScriptSettings : Object
-
-    /**
      * List of directory paths on the server machine
      */
     directories : {
@@ -688,7 +683,7 @@ export class ModeSettingsController {
      * @param {String} setting
      * @returns {Promise<boolean>}
      */
-    resetSetting(setting) : Promise<boolean>
+    resetSetting(setting : String) : Promise<boolean>
 
     /**
      * Saves the current server settings to file
@@ -699,4 +694,16 @@ export class ModeSettingsController {
      * Saves the current temporary settings as the default settings
      */
     keepTempSettings() : void
+
+    /**
+     * Reads the currently saved on disk MatchSettings file
+     * @returns {Promise<void>}
+     */
+    readMatchSettings() : Promise<void>
+
+    /**
+     * Returns whether the current script settings have a setting
+     * @param {String} name Setting name (e. g. S_TimeLimit)
+     */
+    hasSetting(name : String) : boolean
 }

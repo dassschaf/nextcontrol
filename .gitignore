@@ -1,6 +1,9 @@
 # files that should not go public:
 settings.js
 
+# /settings folder contains settings files as they are generated and managed by plugins and SHOULD NOT BE in the git repo
+settings/
+
 # Logs
 logs
 *.log

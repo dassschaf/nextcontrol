@@ -22,6 +22,7 @@ import { Settings } from './settings.js';
 import { Sentences } from './lib/sentences.js';
 import { getPluginList } from './plugins.js'
 import { TMX } from './lib/tmx.js'
+import * as fs from "fs";
 
 
 /**
@@ -172,6 +173,10 @@ export class NextControl {
         logger('su', 'Connected to MongoDB Server');
         await this.client.query('ChatSendServerMessage', ['$0f0~~ $fffConnected to database ...']);
 
+        // ensure ./settings/ exists for our plugins
+        if (!fs.existsSync('./settings'))
+            fs.mkdirSync('./settings');
+
         // now lets load plugins:
         this.chatCommands = [];
         this.adminCommands = [];
@@ -236,6 +241,7 @@ export class NextControl {
 
         // initialize mode settings controller
         this.modeSettings = new Classes.ModeSettingsController(this);
+        await this.modeSettings.init();
         
         // start actually listening
         this.client.on('callback', async (method, para) => {

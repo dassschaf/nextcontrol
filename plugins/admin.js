@@ -41,7 +41,7 @@ export class AdminSuite {
      * @param {NextControl} nextcontrol The script's brain we require to properly register the chat commands
      */
     constructor(nextcontrol) {
-        nextcontrol.registerAdminCommand(new Classes.ChatCommand('rescantrack', this.admin_rescantrack, 'rescans track, to add it to the database', this.name));
+        // register chat commands:
         nextcontrol.registerAdminCommand(new Classes.ChatCommand('restart', this.admin_restart, 'Restarts the current track immediately', this.name));
         nextcontrol.registerAdminCommand(new Classes.ChatCommand('skip', this.admin_skip, 'Skips the current track immediately', this.name));
         nextcontrol.registerAdminCommand(new Classes.ChatCommand('add', this.admin_add, 'Add new tracks to the server from TMX, URL or local path', this.name));
@@ -49,21 +49,10 @@ export class AdminSuite {
         nextcontrol.registerAdminCommand(new Classes.ChatCommand('test', this.testcommand, 'Test command', this.name));
         nextcontrol.registerAdminCommand(new Classes.ChatCommand('remove', this.admin_remove, 'Removes a selected track', this.name));
         nextcontrol.registerAdminCommand(new Classes.ChatCommand('extend', this.admin_extend, 'Extends the play time by a given value (default: 300s).', this.name));
+        nextcontrol.registerAdminCommand(new Classes.ChatCommand('mode', this.admin_mode, 'Various commands to deal with the matchsettings', this.name));
 
+        // save reference
         this.nextcontrol = nextcontrol;
-    }
-
-    /**
-     * Rescans the track, to add and update it to the database
-     * @param {String} login login of the calling player 
-     * @param {Array<String>} params parameters of the call
-     */
-    async admin_rescantrack(login, params) {
-        let map = this.nextcontrol.status.map;
-
-        map.tmxid = await TMX.getID(map.uid);
-
-        await this.nextcontrol.database.collection('maps').updateOne({uid: map.uid}, {$set: map}, {upsert: true});
     }
 
     /**
@@ -72,6 +61,7 @@ export class AdminSuite {
      * @param {Array<String>} params 
      */
     async testcommand(login, params) {
+        // currently testing: accessing the status
         let map = this.nextcontrol.status.map;
 
         console.log('Current track: ' + stripFormatting(map.name));
@@ -86,6 +76,7 @@ export class AdminSuite {
         // get title and player name
         let name = this.nextcontrol.status.getPlayer(login).name;
 
+        // restart!
         await this.nextcontrol.client.query('RestartMap');
         await this.nextcontrol.client.query('ChatSendServerMessage', [format(Sentences.admin.restart, {name: name})]);
     }
@@ -100,6 +91,7 @@ export class AdminSuite {
         let name = this.nextcontrol.status.getPlayer(login).name,
             time = 300;
 
+        // check if the gamemode supports extending the time
         if (!this.nextcontrol.modeSettings.isTimeExtendable()) {
             await this.nextcontrol.client.query('ChatSendServerMessageToLogin', [Sentences.admin.cannotExtend, login]);
             return;
@@ -116,10 +108,12 @@ export class AdminSuite {
             time = Number(params[0]);
         }
 
+        // if the server returns false we got a problem
         if (!await this.nextcontrol.modeSettings.extendTime(time)) {
             // error!
             await this.nextcontrol.client.query('ChatSendServerMessageToLogin', [Sentences.admin.extendError, login]);
 
+        // else, just notify chat and console
         } else {
             await this.nextcontrol.client.query('ChatSendServerMessage', [format(Sentences.admin.extended, {name: this.nextcontrol.status.getPlayer(login).name, time: time})]);
             logger('r', 'Successfully extended time by ' + time + ' seconds.')
@@ -141,25 +135,83 @@ export class AdminSuite {
 
         let id = Number(params[0])
 
+        // check if number is valid
         if (isNaN(id)) {
             // abort:
             await this.nextcontrol.client.query('ChatSendServerMessageToLogin', [Sentences.admin.invalidParams]);
             return;
         }
 
+        // get the correct map from the player's list
         let map = this.nextcontrol.lists.maps.get(login)[id];
-
-        // remove database entry
-        await this.nextcontrol.database.collection('maps').deleteOne(map);
 
         // remove map from map rotation
         await this.nextcontrol.client.query('RemoveMap', [map.file])
 
-        // save match settings
-        await this.nextcontrol.client.query('SaveMatchSettings', [this.nextcontrol.status.directories.maps + '/MatchSettings/' + Settings.trackmania.matchsettings_file]);
-
         // send message
         await this.nextcontrol.client.query('ChatSendServerMessage', [format(Sentences.admin.removed, {name: this.nextcontrol.status.getPlayer(login).name, map: map.name})]);
+    }
+
+    /**
+     * Match Settings tools command
+     * @param {String} login
+     * @param {Array<String>} params
+     * @returns {Promise<void>}
+     */
+    async admin_mode(login, params) {
+        // check parameters
+        if (params.length === 0) {
+            // not enough parameters
+            await this.nextcontrol.client.query('ChatSendServerMessageToLogin', [Sentences.admin.invalidParams, login]);
+            return;
+        }
+
+        // shift operation from array
+        let operation = params.shift();
+
+        if (operation === 'save') {
+            // save to match settings
+            await this.nextcontrol.modeSettings.saveSettingsToFile();
+            await this.nextcontrol.client.query('ChatSendServerMessageToLogin', [Sentences.admin.settingsSaved, login]);
+
+        } else if (operation === 'keep') {
+            // keep this until script/server restart
+            this.nextcontrol.modeSettings.keepTempSettings();
+            await this.nextcontrol.client.query('ChatSendServerMessageToLogin', [Sentences.admin.settingsKept, login]);
+
+        } else if (operation === 'reset') {
+            // reset to current default settings
+            await this.nextcontrol.modeSettings.resetSettings();
+            await this.nextcontrol.client.query('ChatSendServerMessageToLogin', [Sentences.admin.settingsReset, login]);
+
+        } else if (operation === 'read') {
+            // read match settings
+            await this.nextcontrol.modeSettings.readMatchSettings();
+            await this.nextcontrol.client.query('ChatSendServerMessageToLogin', [Sentences.admin.settingsRead, login]);
+
+        } /* else if (operation === 'set') {
+            // currently broken, will fix later.
+
+            // set a mode setting to a value
+            if (params.length === 2) {
+                let setting = params.shift(),
+                    value = params.shift().toString();
+
+                // adjust type of value
+                if (!isNaN(Number(value))) value = Number(value);
+                if (value.toLocaleLowerCase() === 'true' || value.toLocaleLowerCase() === 'false') value = Boolean(value);
+                // else: keep string
+
+                let struct = {};
+                    struct[setting] = value;
+
+                await this.nextcontrol.client.query('SetModeScriptSettings', struct);
+
+            } else {
+                // not enough parameters
+                await this.nextcontrol.client.query('ChatSendServerMessageToLogin', [Sentences.admin.invalidParams, login]);
+            }
+        } */
     }
 
     /**
@@ -171,6 +223,7 @@ export class AdminSuite {
         // get title and player name
         let name = this.nextcontrol.status.getPlayer(login).name;
 
+        // skip & notify chat
         await this.nextcontrol.client.query('NextMap');
         await this.nextcontrol.client.query('ChatSendServerMessage', [format(Sentences.admin.skip, {name: name})]);
     }
@@ -185,6 +238,7 @@ export class AdminSuite {
         await this.nextcontrol.client.query('ChatSendServerMessage', [`$z$s$ff0~~ $fffShutting down...`]);
         logger('w', 'Shutting down NextControl upon /admin shutdown!')
 
+        // shut down!
         process.exit(0);
     }
 
@@ -197,6 +251,7 @@ export class AdminSuite {
         // get title and player name
         let player = this.nextcontrol.status.getPlayer(login);
 
+        // check parameters
         if (params.length !== 2) {
             // not enough parameters
             await this.nextcontrol.client.query('ChatSendServerMessageToLogin', [Sentences.admin.invalidParams, login]);
@@ -213,8 +268,10 @@ export class AdminSuite {
         let source = params.shift(),
             link = params.shift();
 
+        // TMX:
         if (source.toLocaleLowerCase() === 'tmx') {
-            
+
+            // check if the ID is valid
             if (isNaN(Number(link)) || isNaN(parseFloat(link))) {
                 await this.nextcontrol.client.query('ChatSendServerMessageToLogin', [Sentences.admin.addTmxFailedInvalidID, player.login]);
                 return;
@@ -264,6 +321,7 @@ export class AdminSuite {
                 return;
             }
 
+            // get map info
             let map = new Classes.Map(await this.nextcontrol.client.query('GetMapInfo', [fullPath]));
             map.setTMXId(await TMX.getID(map.uid));
 
@@ -321,9 +379,6 @@ export class AdminSuite {
     async addTrackToServer(path, map) {
         // add track
         await this.nextcontrol.client.query('InsertMap', [path]);
-
-        // save map settings
-        await this.nextcontrol.client.query('SaveMatchSettings', [this.nextcontrol.status.directories.maps + '/MatchSettings/' + Settings.trackmania.matchsettings_file]);
 
         // add track to the database
         await this.nextcontrol.database.collection('maps').insertOne(map);

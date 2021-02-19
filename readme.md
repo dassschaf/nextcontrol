@@ -19,7 +19,7 @@ You can find Node.JS and MongoDB with the search engine of your choice and the T
     - records
 - run with `node .`
 
-To add admins in TM2020 you currently need to figure out logins manually, for example by opening the editor and saving a track and copy/remember it from the overview screen shown when saving.
+To add admins in TM2020 you currently need to figure out logins manually. The easiest way to do so is with [trackmania.io](https://trackmania.io/#/players).
 
 ### Usage
 A chat commands list can be found in `/commands.md`.

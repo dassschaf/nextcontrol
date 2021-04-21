@@ -491,5 +491,6 @@ export class NextControl {
 
 }
 
+// actually executed code
 let nc = new NextControl();
 await nc.startup();

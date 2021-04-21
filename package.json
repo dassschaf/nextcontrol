@@ -15,8 +15,8 @@
   "dependencies": {
     "chalk": "^4.1.0",
     "gbxremote": "^0.2.1",
-    "got": "^11.8.1",
+    "got": "^11.8.2",
     "json-beautify": "^1.1.1",
-    "mongodb": "^3.6.3"
+    "mongodb": "^3.6.6"
   }
 }

@@ -87,12 +87,12 @@ export class JukeboxPlugin {
                 this.nextcontrol.jukebox.queueMap(map, player);
 
                 await this.nextcontrol.client.query('ChatSendServerMessage', [format(Sentences.jukebox.hasQueued, {name: this.nextcontrol.status.getPlayer(login).name, map: map.name})]);
-                logger('r', `Jukebox: ${stripFormatting(player.name)} has successfully jukeboxed track ${stripFormatting(map.name)}.`);
+                logger('r', `Jukebox: ${stripFormatting(player.name)} has successfully jukeboxed map ${stripFormatting(map.name)}.`);
             } else {
                 this.nextcontrol.jukebox.priorityAdd(map, player);
 
                 await this.nextcontrol.client.query('ChatSendServerMessage', [format(Sentences.jukebox.priorityAdd, {name: this.nextcontrol.status.getPlayer(login).name, map: map.name})]);
-                logger('r', `Jukebox: ${stripFormatting(player.name)} has set next played track to ${stripFormatting(map.name)}.`);
+                logger('r', `Jukebox: ${stripFormatting(player.name)} has set next played map to ${stripFormatting(map.name)}.`);
             }
 
         } else {

@@ -10,8 +10,8 @@ export class TMX {
     static getID(uid) : Promise<Number>
 
     /**
-     * Downloads a track from TMX and returns the download path relative to the Maps directory
-     * @param {number} id track's TMX ID
+     * Downloads a map from TMX and returns the download path relative to the Maps directory
+     * @param {number} id map's TMX ID
      * @param {string} downloadDir Directory, where the map shall be saved (downloadDir/id.Map.Gbx)
      * @returns {Promise<string>} absolute path to the map
      */

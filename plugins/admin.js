@@ -42,12 +42,12 @@ export class AdminSuite {
      */
     constructor(nextcontrol) {
         // register chat commands:
-        nextcontrol.registerAdminCommand(new Classes.ChatCommand('restart', this.admin_restart, 'Restarts the current track immediately', this.name));
-        nextcontrol.registerAdminCommand(new Classes.ChatCommand('skip', this.admin_skip, 'Skips the current track immediately', this.name));
-        nextcontrol.registerAdminCommand(new Classes.ChatCommand('add', this.admin_add, 'Add new tracks to the server from TMX, URL or local path', this.name));
+        nextcontrol.registerAdminCommand(new Classes.ChatCommand('restart', this.admin_restart, 'Restarts the current map immediately', this.name));
+        nextcontrol.registerAdminCommand(new Classes.ChatCommand('skip', this.admin_skip, 'Skips the current map immediately', this.name));
+        nextcontrol.registerAdminCommand(new Classes.ChatCommand('add', this.admin_add, 'Add new maps to the server from TMX, URL or local path', this.name));
         nextcontrol.registerAdminCommand(new Classes.ChatCommand('shutdown', this.admin_shutdown, 'Shuts down Nextcontrol', this.name));
         nextcontrol.registerAdminCommand(new Classes.ChatCommand('test', this.testcommand, 'Test command', this.name));
-        nextcontrol.registerAdminCommand(new Classes.ChatCommand('remove', this.admin_remove, 'Removes a selected track', this.name));
+        nextcontrol.registerAdminCommand(new Classes.ChatCommand('remove', this.admin_remove, 'Removes a selected map', this.name));
         nextcontrol.registerAdminCommand(new Classes.ChatCommand('extend', this.admin_extend, 'Extends the play time by a given value (default: 300s).', this.name));
         nextcontrol.registerAdminCommand(new Classes.ChatCommand('mode', this.admin_mode, 'Various commands to deal with the matchsettings', this.name));
 
@@ -64,11 +64,11 @@ export class AdminSuite {
         // currently testing: accessing the status
         let map = this.nextcontrol.status.map;
 
-        console.log('Current track: ' + stripFormatting(map.name));
+        console.log('Current map: ' + stripFormatting(map.name));
     }
 
     /**
-     * Function making the current track being restarted
+     * Function making the current map being restarted
      * @param {String} login login of the calling player 
      * @param {Array<String>} params parameters of the call
      */
@@ -82,7 +82,7 @@ export class AdminSuite {
     }
 
     /**
-     * Function extending the currently played track's time
+     * Function extending the currently played map's time
      * @param {String} login login of the calling player
      * @param {Array<String>} params parameters of the call
      */
@@ -121,7 +121,7 @@ export class AdminSuite {
     }
 
     /**
-     * Function removing a selected track from the database and map rotation
+     * Function removing a selected map from the database and map rotation
      * @param {String} login 
      * @param {Array<String>} params 
      */
@@ -215,7 +215,7 @@ export class AdminSuite {
     }
 
     /**
-     * Function making the current track being skipped
+     * Function making the current map being skipped
      * @param {String} login login of the calling player 
      * @param {Array<String>} params parameters of the call
      */
@@ -243,7 +243,7 @@ export class AdminSuite {
     }
 
     /**
-     * Function handling adding tracks to the server
+     * Function handling adding maps to the server
      * @param {String} login login of the calling player 
      * @param {Array<String>} params parameters of the call
      */
@@ -290,24 +290,24 @@ export class AdminSuite {
             // get url right
             const url = TMX.site + '/maps/download/' + id;
 
-            // download track
+            // download map
             const request = await got(url, {headers: TMX.headers, encoding: 'binary'});
-            const trackFile = request.rawBody;
+            const mapFile = request.rawBody;
 
-            // write track to the TMX folder
-            fs.writeFileSync(directory + filename, trackFile);
+            // write map to the TMX folder
+            fs.writeFileSync(directory + filename, mapFile);
 
-            // get track info
+            // get map info
             let map = new Classes.Map(await this.nextcontrol.client.query('GetMapInfo', [directory + filename]));
             map.setTMXId(id);
 
-            logger('r', 'Downloaded track ' + stripFormatting(map.name) + ' from TMX');
+            logger('r', 'Downloaded map ' + stripFormatting(map.name) + ' from TMX');
 
-            // add track to the map list
-            await this.addTrackToServer(directory + filename, map)
+            // add map to the map list
+            await this.addmapToServer(directory + filename, map)
 
             // send info
-            await this.nextcontrol.client.query('ChatSendServerMessage', [format(Sentences.admin.addedTmx, {name: player.name, track: map.name})]);
+            await this.nextcontrol.client.query('ChatSendServerMessage', [format(Sentences.admin.addedTmx, {name: player.name, map: map.name})]);
             logger('r', `${stripFormatting(map.name)} was downloaded from TMX (ID: ${id}) and added to the map list.`);
         }
 
@@ -325,13 +325,13 @@ export class AdminSuite {
             let map = new Classes.Map(await this.nextcontrol.client.query('GetMapInfo', [fullPath]));
             map.setTMXId(await TMX.getID(map.uid));
 
-            // add track to the map list
-            // add track to the map list
-            await this.addTrackToServer(fullPath, map)
+            // add map to the map list
+            // add map to the map list
+            await this.addmapToServer(fullPath, map)
 
             // send info
-            await this.nextcontrol.client.query('ChatSendServerMessage', [format(Sentences.admin.addedLocal, {name: player.name, track: map.name})]);
-            logger('r', `Local track ${stripFormatting(map.name)} (${link}) was added to the map list.`);
+            await this.nextcontrol.client.query('ChatSendServerMessage', [format(Sentences.admin.addedLocal, {name: player.name, map: map.name})]);
+            logger('r', `Local map ${stripFormatting(map.name)} (${link}) was added to the map list.`);
         }
 
         if (source.toLocaleLowerCase() === 'url') {
@@ -346,24 +346,24 @@ export class AdminSuite {
             // ensure the directory we save to exists
             if (!fs.existsSync(directory)) fs.mkdirSync(directory);
 
-            // download track
+            // download map
             const request = await got(link, {headers: TMX.headers, encoding: 'binary'});
-            const trackFile = request.rawBody;
+            const mapFile = request.rawBody;
 
-            // write track to the TMX folder
-            fs.writeFileSync(directory + filename, trackFile);
+            // write map to the TMX folder
+            fs.writeFileSync(directory + filename, mapFile);
 
-            // get track info
+            // get map info
             let map = new Classes.Map(await this.nextcontrol.client.query('GetMapInfo', [directory + filename]));
             map.setTMXId(await TMX.getID(map.uid));
 
-            // add track to the map list
-            await this.addTrackToServer(directory + filename, map)
+            // add map to the map list
+            await this.addmapToServer(directory + filename, map)
 
             // send info
             await this.nextcontrol.client.query('ChatSendServerMessage', [format(Sentences.admin.addedUrl, {
                 name: player.name,
-                track: map.name
+                map: map.name
             })]);
             logger('r', `${stripFormatting(map.name)} was downloaded from URL (${link}) and added to the map list.`);
 
@@ -371,16 +371,16 @@ export class AdminSuite {
     }
 
     /**
-     * Adds a track to the server
-     * @param path {String} absolute! path to the track
+     * Adds a map to the server
+     * @param path {String} absolute! path to the map
      * @param map {Classes.Map} map object
      * @returns {Promise<void>}
      */
-    async addTrackToServer(path, map) {
-        // add track
+    async addmapToServer(path, map) {
+        // add map
         await this.nextcontrol.client.query('InsertMap', [path]);
 
-        // add track to the database
+        // add map to the database
         await this.nextcontrol.database.collection('maps').insertOne(map);
     }
 

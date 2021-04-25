@@ -42,7 +42,7 @@ export class ServerLib {
     getCurrentMapInfo() : Promise<Classes.Map>
 
     /**
-     * Returns the map info of a track given by a path
+     * Returns the map info of a map given by a path
      * @param {String} path Complete path to file
      * @returns {Promise<Classes.Map>}
      */

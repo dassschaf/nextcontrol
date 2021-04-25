@@ -356,11 +356,11 @@ export class NextControl {
                  */
                 let servMap = JSON.parse(JSON.stringify(p));
 
-                // check if track is in database already
+                // check if map is in database already
                 if ((await this.database.collection('maps').countDocuments({uid : p.uid})) > 0)
                     p = Classes.Map.fromDb(await this.database.collection('maps').findOne({uid : p.uid}));
 
-                else { // track isn't in database yet:
+                else { // map isn't in database yet:
                     // find TMX id
                     p.setTMXId(await TMX.getID(p.uid));
 

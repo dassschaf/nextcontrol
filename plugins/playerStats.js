@@ -148,7 +148,7 @@ export class PlayerStats {
     connections
 
     /**
-     * Times finished a track
+     * Times finished a map
      * @type {Number}
      */
     finishes

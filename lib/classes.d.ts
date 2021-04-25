@@ -370,9 +370,9 @@ export class LocalRecord {
      * 
      * @param login player login
      * @param time record time or score
-     * @param track track UID
+     * @param map track UID
      */
-    constructor(login : string, time : number, track : string)
+    constructor(login : string, time : number, map : string)
 
     /**
      * Player login
@@ -387,7 +387,7 @@ export class LocalRecord {
     /**
      * track UID
      */
-    track : string
+    map : string
 }
 
 /**

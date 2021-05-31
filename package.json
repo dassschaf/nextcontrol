@@ -17,6 +17,6 @@
     "gbxremote": "^0.2.1",
     "got": "^11.8.2",
     "json-beautify": "^1.1.1",
-    "mongodb": "^3.6.8"
+    "mongodb": "^3.6.9"
   }
 }

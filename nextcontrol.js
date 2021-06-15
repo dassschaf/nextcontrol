@@ -18,6 +18,9 @@ import * as CallbackParams from './lib/callbackparams.js';
 import * as Classes from './lib/classes.js';
 import { format, logger, stripFormatting } from './lib/utilities.js';
 
+import { DatabaseLib } from "./lib/databaseLib.js";
+import { ServerLib } from "./lib/serverLib.js";
+
 import { Settings } from './settings.js';
 import { Sentences } from './lib/sentences.js';
 import { getPluginList } from './plugins.js'
@@ -70,6 +73,18 @@ export class NextControl {
      * @type {mongodb.Db}
      */
     database
+
+    /**
+     * DatabaseLib object
+     * @type {DatabaseLib}
+     */
+    dblib
+
+    /**
+     * ServerLib objekt
+     * @type {ServerLib}
+     */
+    serverlib
 
     /**
      * Controller for the gamemode settings
@@ -164,14 +179,16 @@ export class NextControl {
         // set properties accordingly
         this.database = await database.db(Settings.database.database)
 
-        // nextcontrol fundamentally requires these three collections
-        this.addRequiredCollection('players');
-        this.addRequiredCollection('maps');
-        this.addRequiredCollection('records');
+        // set up helper libraries
+        this.serverlib = new ServerLib(this);
+        this.dblib = new DatabaseLib(this);
 
         // woo, we're connected!
         logger('su', 'Connected to MongoDB Server');
         await this.client.query('ChatSendServerMessage', ['$0f0~~ $fffConnected to database ...']);
+
+        // set up necessary collections
+        await this.dblib.mongodbCheckCollections();
 
         // ensure ./settings/ exists for our plugins
         if (!fs.existsSync('./settings'))

@@ -22,17 +22,31 @@ const Settings = {
         matchsettings_file: 'set.txt'
     },
 
-    // Database settings
-    database: {
-        // Database server host or URI
+    usedDatabase: 'mongodb', // or mysql...
+
+    // you only need to enter the details about the database you actually are going to use.
+
+    // MongoDB settings
+    mongoDb: {
+        // Connection URI
         uri: "mongodb://localhost/?poolSize=20&w=majority",
 
         // Database name
-        database: 'nextcontrol',
+        database: 'nextcontrol'
+    },
 
-        // Database type
-        // Supported Databases: 'MongoDB', ... more to come.
-        type: "MongoDB"
+    // MySQL database settings
+    mySql: {
+        // host and port
+        host: "localhost",
+        port: 3306,
+
+        // user and password
+        user: "root",
+        password: "password",
+
+        // database name
+        database: "nextcontrol"
     },
 
     // List of disabled plugins by their name

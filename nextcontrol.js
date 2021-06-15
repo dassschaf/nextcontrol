@@ -10,6 +10,7 @@
  */
 import gbxremote from 'gbxremote';
 import mongodb from 'mongodb';
+import mariadb from 'mariadb';
 
 /**
  * Other imports
@@ -69,10 +70,16 @@ export class NextControl {
     isReady = false;
 
     /**
-     * Database object
+     * Mongodb database object
      * @type {mongodb.Db}
      */
     mongoDb
+
+    /**
+     * MariaDB database connection object
+     * @type {mariadb.PoolConnection}
+     */
+    mysql
 
     /**
      * DatabaseLib object
@@ -167,28 +174,45 @@ export class NextControl {
         // woo, we're connected!
         await this.client.query('ChatSendServerMessage', ['$0f0~~ $fffStarting NextControl ...']);
 
-        // create MongoDB client
-        let database = new mongodb.MongoClient(Settings.database.uri, { useNewUrlParser: true, useUnifiedTopology: true });
-        
-        // wait for database connection
-        await database.connect().catch(e => {
-            logger('er', JSON.stringify(e, null, 2));
-            process.exit(7);
-        });
+        let dbtype = Settings.usedDatabase.toLocaleLowerCase();
 
-        // set properties accordingly
-        this.mongoDb = await database.db(Settings.database.database)
+        if (dbtype === 'mongodb') {
+            // create MongoDB client
+            let database = new mongodb.MongoClient(Settings.mongoDb.uri, { useNewUrlParser: true, useUnifiedTopology: true });
+
+            // wait for database connection
+            await database.connect().catch(e => {
+                logger('er', JSON.stringify(e, null, 2));
+                process.exit(7);
+            });
+
+            // set properties accordingly
+            this.mongoDb = await database.db(Settings.mongoDb.database)
+
+        } else if (dbtype === "mysql") {
+
+            // create connection pool
+            let pool = await mariadb.createPool(Settings.mySql);
+
+            // create actual connection
+            let conn = await pool.getConnection();
+
+            // set properties accordingly
+            this.mysql = conn;
+        }
+
 
         // set up helper libraries
         this.serverlib = new ServerLib(this);
         this.dblib = new DatabaseLib(this);
 
         // woo, we're connected!
-        logger('su', 'Connected to MongoDB Server');
+        logger('su', 'Connected to Database Server');
         await this.client.query('ChatSendServerMessage', ['$0f0~~ $fffConnected to database ...']);
 
-        // set up necessary collections
-        await this.dblib.mongodbCheckCollections();
+        // set up necessary collections or tables
+        if (dbtype === "mongodb") await this.dblib.mongodbCheckCollections();
+        if (dbtype === "mysql") await this.dblib.mysqlCheckTables();
 
         // ensure ./settings/ exists for our plugins
         if (!fs.existsSync('./settings'))
@@ -222,18 +246,7 @@ export class NextControl {
                 adminCList += command.commandName + ', '; else adminCList += command.commandName
         })
         logger('su', 'Admin commands registered: ' + adminCList);
-        
-        // check if all necessary collections exist:
-        let existingCollections = await database.db(Settings.database.database).listCollections({}, {nameOnly: true}).toArray(); // Array of objects {name: '', type: ''}
-        existingCollections = existingCollections.map(item => { return item.name });
 
-        // create missing collections
-        for (const collection of this.requiredCollections) {
-            if (!existingCollections.includes(collection)) {
-                await database.db(Settings.database.database).createCollection(collection);
-                logger('db', `Created missing collection ${collection}`);
-            }
-        }
 
         // now that we're done:
         this.isReady = true;

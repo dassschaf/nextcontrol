@@ -101,7 +101,7 @@ export class KarmaVote {
 
     // Validity check
     isValid() {
-        return (this.score >= 0 && this.score <= 0)
+        return (this.score >= 0 && this.score <= 10)
     }
 
     // Constructor

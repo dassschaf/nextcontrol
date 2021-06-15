@@ -35,7 +35,7 @@ export class Join {
      */
     async onPlayerConnect(player, isSpectator) {                    
         
-        await this.nextcontrol.database.collection('players').updateOne({login: player.login}, {$set: player}, {upsert: true});
+        await this.nextcontrol.mongoDb.collection('players').updateOne({login: player.login}, {$set: player}, {upsert: true});
 
         if (Settings.admins.includes(player.login)) {
             logger('r','Admin ' + stripFormatting(player.name) + ' has joined the server');

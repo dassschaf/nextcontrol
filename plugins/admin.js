@@ -381,7 +381,7 @@ export class AdminSuite {
         await this.nextcontrol.client.query('InsertMap', [path]);
 
         // add map to the database
-        await this.nextcontrol.database.collection('maps').insertOne(map);
+        await this.nextcontrol.mongoDb.collection('maps').insertOne(map);
     }
 
 }

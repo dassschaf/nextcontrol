@@ -78,7 +78,7 @@ export class ListsPlugin {
             /**
              * @type {Array<Classes.Map>}
              */
-            let maps = await this.nextcontrol.database.collection('maps').find().toArray();
+            let maps = await this.nextcontrol.mongoDb.collection('maps').find().toArray();
 
             // write maps array to the player's list:
             this.nextcontrol.lists.maps.set(login, maps);
@@ -90,7 +90,7 @@ export class ListsPlugin {
              * @type {Array<Classes.Map>}
              */
             let hits = [],
-                maps = await this.nextcontrol.database.collection('maps').find().toArray();
+                maps = await this.nextcontrol.mongoDb.collection('maps').find().toArray();
 
             // make search regex
             let regex = new RegExp(params[0], 'gi');
@@ -117,7 +117,7 @@ export class ListsPlugin {
             this.nextcontrol.lists.players.set(login, players);
             return;
         } else if (params.length == 1 && ['db', 'database'].includes(params[0])) {
-            let players = await this.nextcontrol.database.collection('players').find().toArray();
+            let players = await this.nextcontrol.mongoDb.collection('players').find().toArray();
 
             this.nextcontrol.lists.players.set(login, players)
         }

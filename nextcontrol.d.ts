@@ -1,6 +1,8 @@
 import Client from "gbxremote/lib/client";
 import { Db } from "mongodb";
 import * as Classes from "./lib/classes";
+import {DatabaseLib} from "./lib/databaseLib";
+import {ServerLib} from "./lib/serverLib";
 
 export class NextControl {
     
@@ -28,7 +30,17 @@ export class NextControl {
     /**
      * MongoDB client object, accessing the controller's specified database
      */
-    database : Db
+    mongoDb : Db
+
+    /**
+     * Library with common database queries
+     */
+    dblib : DatabaseLib
+
+    /**
+     * Library to facilitate server queries
+     */
+    serverlib : ServerLib
 
     /**
      * Flag will be set to true, once the class instance is ready for listening.

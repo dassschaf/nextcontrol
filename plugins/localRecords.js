@@ -56,13 +56,13 @@ export class LocalRecords {
         let map = this.nextcontrol.status.map;
 
         // print local records to chat
-        if ((await this.nextcontrol.database.collection('records').countDocuments({map : map.uid})) < 1) {
+        if ((await this.nextcontrol.mongoDb.collection('records').countDocuments({map : map.uid})) < 1) {
             this.nextcontrol.client.query("ChatSendServerMessageToLogin", [util.format(Sentences.localRecords.noneYet, { when: Sentences.localRecords.rightnow, map: map.name}), login]);
 
         } else {
             let msg = util.format(Sentences.localRecords.listBegin, {map: map.name, when: Sentences.localRecords.rightnow});
 
-            let records = await this.nextcontrol.database.collection('records').aggregate([
+            let records = await this.nextcontrol.mongoDb.collection('records').aggregate([
                 { $match: { map: map.uid } },
                 { $sort: { time: 1 }},
                 { $lookup: {
@@ -93,12 +93,12 @@ export class LocalRecords {
         let map = this.nextcontrol.status.map;
 
         // print local records to chat
-        if ((await this.nextcontrol.database.collection('records').countDocuments({map : map.uid})) < 1) {
+        if ((await this.nextcontrol.mongoDb.collection('records').countDocuments({map : map.uid})) < 1) {
             this.nextcontrol.client.query('ChatSendServerMessage', [util.format(Sentences.localRecords.noneYet, { when: Sentences.localRecords.before, map: map.name})]);
         } else {
             let msg = util.format(Sentences.localRecords.listBegin, {map: map.name, when: Sentences.localRecords.before});
 
-            let records = await this.nextcontrol.database.collection('records').aggregate([
+            let records = await this.nextcontrol.mongoDb.collection('records').aggregate([
                 { $match: { map: map.uid } },
                 { $sort: { time: 1 }},
                 { $lookup: {
@@ -133,13 +133,13 @@ export class LocalRecords {
         let map = this.nextcontrol.status.map;
 
         // print local records to chat
-        if ((await this.nextcontrol.database.collection('records').countDocuments({map : map.uid})) < 1) {
+        if ((await this.nextcontrol.mongoDb.collection('records').countDocuments({map : map.uid})) < 1) {
             this.nextcontrol.client.query('ChatSendServerMessage', [util.format(Sentences.localRecords.noneYet, { when: Sentences.localRecords.after, map: map.name})]);
         
         } else {
             let msg = util.format(Sentences.localRecords.listBegin, {map: map.name, when: Sentences.localRecords.after});
 
-            let records = await this.nextcontrol.database.collection('records').aggregate([
+            let records = await this.nextcontrol.mongoDb.collection('records').aggregate([
                 { $match: { map: map.uid } },
                 { $sort: { time: 1 }},
                 { $lookup: {
@@ -184,14 +184,14 @@ export class LocalRecords {
         let timeString = util.msToString(timeOrScore);
 
         // get current local record and determine whether improvement
-        if ((await this.nextcontrol.database.collection('records').countDocuments({ map: uid, login: login })) == 0) {
+        if ((await this.nextcontrol.mongoDb.collection('records').countDocuments({ map: uid, login: login })) == 0) {
             // no record exists yet
             // insert new record document
             let rec = new Classes.LocalRecord(login, timeOrScore, uid);
 
-            await this.nextcontrol.database.collection('records').insertOne(rec);
+            await this.nextcontrol.mongoDb.collection('records').insertOne(rec);
 
-            let pos = util.nth((await this.nextcontrol.database.collection('records').countDocuments({map: uid, time: {$lt: rec.time}})) + 1),
+            let pos = util.nth((await this.nextcontrol.mongoDb.collection('records').countDocuments({map: uid, time: {$lt: rec.time}})) + 1),
                 name = this.nextcontrol.status.getPlayer(login).name;
 
             let msg = util.format(Sentences.localRecords.claimed, {player: name, pos: pos, time: timeString});
@@ -204,18 +204,18 @@ export class LocalRecords {
             let rec = new Classes.LocalRecord(login, timeOrScore, uid);
 
             // there is already an existing, matching record:
-            let currentRecord = await this.nextcontrol.database.collection('records').findOne({ map: uid, login: login });
+            let currentRecord = await this.nextcontrol.mongoDb.collection('records').findOne({ map: uid, login: login });
 
             // if improvement, update record and determine position
             if (currentRecord.time > timeOrScore) { 
                 // improvement!
 
                 // save new new time to database
-                await this.nextcontrol.database.collection('records').updateOne({login: login, map: uid}, {$set: rec});
+                await this.nextcontrol.mongoDb.collection('records').updateOne({login: login, map: uid}, {$set: rec});
 
                 // send improvement message:
                 let improvement = - (currentRecord.time - rec.time) / 1000,
-                    pos = util.nth((await this.nextcontrol.database.collection('records').countDocuments({map: uid, time: {$lt: rec.time}})) + 1),
+                    pos = util.nth((await this.nextcontrol.mongoDb.collection('records').countDocuments({map: uid, time: {$lt: rec.time}})) + 1),
                     name = this.nextcontrol.status.getPlayer(login).name;
 
                 let msg = util.format(Sentences.localRecords.improved, {player: name, pos: pos, time: timeString, imp: improvement});
@@ -224,7 +224,7 @@ export class LocalRecords {
                 util.logger('r', `${util.stripFormatting(name)} improved to ${pos} local record (${timeString}) on ${util.stripFormatting(this.nextcontrol.status.map.name)}`);
 
             } else if (currentRecord.time == timeOrScore) {
-                let pos = util.nth((await this.nextcontrol.database.collection('records').countDocuments({map: uid, time: {$lt: rec.time}})) + 1),
+                let pos = util.nth((await this.nextcontrol.mongoDb.collection('records').countDocuments({map: uid, time: {$lt: rec.time}})) + 1),
                     name = this.nextcontrol.status.getPlayer(login).name;
 
                 let msg = util.format(Sentences.localRecords.equalled, {player: name, pos: pos, time: timeString});

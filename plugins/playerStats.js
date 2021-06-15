@@ -41,7 +41,7 @@ export class PlayerStatsPlugin {
      * @returns {Promise<void>}
      */
     async saveStats(stats) {
-        await this.nc.database.collection('playerStats').updateOne({login: stats.login}, {$set: stats}, {upsert: true});
+        await this.nc.mongoDb.collection('playerStats').updateOne({login: stats.login}, {$set: stats}, {upsert: true});
     }
 
     /**
@@ -50,8 +50,8 @@ export class PlayerStatsPlugin {
      * @returns {Promise<PlayerStats>}
      */
     async loadStats(login) {
-        if (await this.nc.database.collection('playerStats').countDocuments({login: login}) === 1)
-            return await this.nc.database.collection('playerStats').findOne({login: login});
+        if (await this.nc.mongoDb.collection('playerStats').countDocuments({login: login}) === 1)
+            return await this.nc.mongoDb.collection('playerStats').findOne({login: login});
         else
             return new PlayerStats(login);
     }

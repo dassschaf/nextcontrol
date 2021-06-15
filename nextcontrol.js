@@ -72,7 +72,7 @@ export class NextControl {
      * Database object
      * @type {mongodb.Db}
      */
-    database
+    mongoDb
 
     /**
      * DatabaseLib object
@@ -177,7 +177,7 @@ export class NextControl {
         });
 
         // set properties accordingly
-        this.database = await database.db(Settings.database.database)
+        this.mongoDb = await database.db(Settings.database.database)
 
         // set up helper libraries
         this.serverlib = new ServerLib(this);
@@ -374,15 +374,15 @@ export class NextControl {
                 let servMap = JSON.parse(JSON.stringify(p));
 
                 // check if map is in database already
-                if ((await this.database.collection('maps').countDocuments({uid : p.uid})) > 0)
-                    p = Classes.Map.fromDb(await this.database.collection('maps').findOne({uid : p.uid}));
+                if ((await this.mongoDb.collection('maps').countDocuments({uid : p.uid})) > 0)
+                    p = Classes.Map.fromDb(await this.mongoDb.collection('maps').findOne({uid : p.uid}));
 
                 else { // map isn't in database yet:
                     // find TMX id
                     p.setTMXId(await TMX.getID(p.uid));
 
                     // update database entry
-                    await this.database.collection('maps').insertOne(p);
+                    await this.mongoDb.collection('maps').insertOne(p);
                 }
 
                 let hasChanged = false;
@@ -406,7 +406,7 @@ export class NextControl {
                 }
 
                 // update the map document in database, if we have just changed it
-                if (hasChanged) await this.database.collection('maps').updateOne({uid: p.uid}, {$set: p})
+                if (hasChanged) await this.mongoDb.collection('maps').updateOne({uid: p.uid}, {$set: p})
 
                 // update status:
                 this.status.map = p;

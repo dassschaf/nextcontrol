@@ -3,6 +3,7 @@ import { Db } from "mongodb";
 import * as Classes from "./lib/classes";
 import {DatabaseLib} from "./lib/databaseLib";
 import {ServerLib} from "./lib/serverLib";
+import mariadb from 'mariadb';
 
 export class NextControl {
     
@@ -31,6 +32,12 @@ export class NextControl {
      * MongoDB client object, accessing the controller's specified database
      */
     mongoDb : Db
+
+    /**
+     * MariaDB database connection object
+     * @type {mariadb.PoolConnection}
+     */
+    mysql : mariadb.PoolConnection
 
     /**
      * Library with common database queries

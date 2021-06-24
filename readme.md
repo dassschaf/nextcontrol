@@ -13,10 +13,11 @@ You can find Node.JS and MongoDB with the search engine of your choice and the T
 - extract the files somewhere
 - move to the extracted files and run `npm install`
 - rename `settings-sample.js` to `settings.js` and adjust the file to your setup
-- connect to your MongoDB instance and create following collections with standard settings
-    - players
-    - maps
-    - records
+- ~~- connect to your MongoDB instance and create following collections with standard settings
+    - ~~players
+    - ~~maps
+    - ~~records~~
+    - this should happen automatically now
 - run with `node .`
 
 To add admins in TM2020 you currently need to figure out logins manually. The easiest way to do so is with [trackmania.io](https://trackmania.io/#/players).

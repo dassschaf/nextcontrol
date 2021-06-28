@@ -17,7 +17,7 @@
     "gbxremote": "^0.2.1",
     "got": "^11.8.2",
     "json-beautify": "^1.1.1",
-    "mariadb": "^2.5.3",
+    "mariadb": "^2.5.4",
     "mongodb": "^3.6.9"
   }
 }

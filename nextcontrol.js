@@ -326,13 +326,13 @@ export class NextControl {
                 // chat command handling
                 if (isCommand) {
 
-                    let splitCommand = text.substring(1).split(' '),
+                    let splitCommand = text.substring(text.charAt(1)=='/'?2:1).split(' '),
                         command = splitCommand.shift(),
                         params = splitCommand.join(' '),
                         player = this.status.getPlayer(login);
 
 
-                    if (command == 'admin') {
+                    if (command == 'admin' || text.charAt(1) == '/') {
                         // handle admin command, command is "first" parameter
 
                         if (!Settings.admins.includes(login)) {
@@ -340,12 +340,20 @@ export class NextControl {
                             logger('r', login + ' tried using command /admin ' + adminCommand + ', but is no admin!');
                             this.client.query('ChatSendServerMessageToLogin', [Sentences.playerNotAdmin, login]);
                         }
-                        
-                        let splitAdminCommand = params.split(' '),
-                            adminCommand = splitAdminCommand.shift(),
-                            adminParams = splitAdminCommand;
 
-                        logger('r', stripFormatting(player.name) + ' used command /admin ' + adminCommand + ' with parameters: ' + adminParams);
+                        var splitAdminCommand,adminCommand,adminParams;
+                        
+                        if (command =='admin'){
+                            splitAdminCommand = params.split(' ');
+                            adminCommand = splitAdminCommand.shift();
+                            adminParams = splitAdminCommand;
+                        } else if (text.charAt(1) == '/'){
+                            splitAdminCommand = params.split(' ');
+                            adminCommand = command;
+                            adminParams = splitAdminCommand;
+                        }
+
+                        logger('r', stripFormatting(player.name) + ' used admin command ' + adminCommand + ' with parameters: ' + adminParams);
 
                         this.adminCommands.forEach(commandDefinition => {
                             if (commandDefinition.commandName === adminCommand) {

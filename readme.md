@@ -7,7 +7,9 @@ You need to have those three pieces of software set up and running in order to u
 - MongoDB
 - TM Dedicated Server
 
-You can find Node.JS and MongoDB with the search engine of your choice and the TM Dedicated Server and a guide to set up one in the forums related to the game. 
+You can find Node.JS and MongoDB with the search engine of your choice and the TM Dedicated Server and a guide to set up one in the forums related to the game.
+
+*Note:* Avoid using port 5000 for XML-RPC with the Trackmania server, since the server may unpredictably use port 5001 when the game is running instead.
 
 ### Installation
 - extract the files somewhere

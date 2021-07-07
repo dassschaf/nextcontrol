@@ -131,11 +131,19 @@ export class DiscordBot {
     async onPlayerDisconnect(player, reason) {
         if (this.settings.enableLogChannel){
             this.discordClient.channels.fetch(Settings.discord.logChannel).then(channel=>{
-                let embed = new Discord.MessageEmbed();
-                embed.setColor("#FF8800")
-                .setTitle(Sentences.discord.leftMessage.title)
-                .setDescription(format(Sentences.discord.leftMessage.description, { player: player.name, login: player.login }))
-                channel.send(embed)
+                if (player.name == '' && player.login == ''){ // Server shutdown
+                    let embed = new Discord.MessageEmbed();
+                    embed.setColor("#FF0000")
+                    .setTitle(Sentences.discord.serverShutdown.title)
+                    .setDescription(Sentences.discord.serverShutdown.description)
+                    channel.send(embed)
+                } else { // Player disconnect
+                    let embed = new Discord.MessageEmbed();
+                    embed.setColor("#FF8800")
+                    .setTitle(Sentences.discord.leftMessage.title)
+                    .setDescription(format(Sentences.discord.leftMessage.description, { player: player.name, login: player.login }))
+                    channel.send(embed)
+                }
             })
         }
     }

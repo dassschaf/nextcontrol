@@ -68,7 +68,12 @@ const Settings = {
         logChannel: "0123456789",
 
         // Enables or disable chat logging to Discord, if enabled all messages sent in TM will be logged on the log Channel set above
-        logChat: true
+        logChat: true,
+
+        // Cross-chat channel ID, Allows to link together the server chat and the Discord chat.
+        // The messages received on Discord will be sent on TM and vice versa
+        // Leave an empty field ( "" ) if you don't want to enable cross-chat
+        chatChannel: "0123456789"
     }
 
 }

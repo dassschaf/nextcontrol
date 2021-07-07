@@ -41,7 +41,12 @@ export class DiscordBot {
          * Enabling log channel
          * @type {Boolean}
          */
-        enableLogChannel: true
+        enableLogChannel: true,
+        /**
+         * Enabling cross-chat between TM server and Discord server
+         * @type {Boolean}
+         */
+        enableChatChannel: true
     }
 
     /**
@@ -52,6 +57,7 @@ export class DiscordBot {
 
         if (!Settings.discord.token || Settings.discord.token == "") return false;
         if (!Settings.discord.logChannel || Settings.discord.logChannel == "") this.settings.enableLogChannel = false;
+        if (!Settings.discord.chatChannel || Settings.discord.chatChannel == "") this.settings.enableChatChannel = false;
 
         this.discordClient = new Discord.Client()
         this.discordClient.login(Settings.discord.token).catch(err=>{
@@ -80,8 +86,53 @@ export class DiscordBot {
             })
         })
 
+        this.discordClient.on('message', async message=>{
+            // Cross-chat function
+            if (this.settings.enableChatChannel && message.channel.id == Settings.discord.chatChannel && !message.author.bot){
+                await this.nextcontrol.client.query('ChatSendServerMessage', [format(Sentences.discord.crossChat, {author: "$" + this.hexToShort(message.member.displayHexColor) + message.author.username + "$z$s", content: message.content})]);
+            }
+        })
+
         // save the reference to the main class instance
         this.nextcontrol = nextcontrol;
+    }
+
+    /**
+     * @private
+     * @param {String} hex
+     */
+    hexToShort(hex) {
+
+        // if it is short, return
+        if ( hex.length == 4 ){
+            return hex.substring(0,3);
+        }
+    
+        // remove #
+        if ( hex.charAt(0) == '#' ) {
+            hex = hex.substring(1);
+        }
+    
+        // check that hex is valid
+        if ( hex.length != 6 ) {
+            return "";
+        }
+    
+        var r = hex.substring(0,2),
+            g = hex.substring(2,4),
+            b = hex.substring(4,6);
+    
+        return this.shortVal(r) + this.shortVal(g) + this.shortVal(b);
+    
+    }
+    
+    /**
+     * @private
+     * @param {String} c
+     */
+    shortVal(c) {
+        var ci = Number.parseInt(c, 16);
+        return (ci/17).toString(16).substring(0,1).toUpperCase();
     }
 
     /**
@@ -116,10 +167,56 @@ export class DiscordBot {
      * @param {String} text Message text
      */
     async onChat(login, text) {
-        if (this.settings.enableLogChannel && Settings.discord.logChat){
-            this.discordClient.channels.fetch(Settings.discord.logChannel).then(channel=>{
-                channel.send(`SERVER CHAT: \`${new Date().toUTCString()}\` ${this.nextcontrol.status.getPlayer(login).name} (\`${login}\`):\n${text}`)
-            })
+        // Log commands
+        if (this.settings.enableLogChannel){
+            let embed = new Discord.MessageEmbed();
+            embed.setAuthor(`${this.nextcontrol.status.getPlayer(login).name} (${login})`);
+            embed.setDescription(stripFormatting(text));
+            embed.setTimestamp();
+            if (text.startsWith('/')){ // It's maybe a command
+                let splitCommand = text.substring(1).split(' '),
+                    command = splitCommand.shift(),
+                    params = splitCommand.join(' '),
+                    player = this.nextcontrol.status.getPlayer(login);
+                if (command == 'admin'){
+                    if (!Settings.admins.includes(login)) {
+                        // player is not admin!
+                        this.discordClient.channels.fetch(Settings.discord.logChannel).then(channel=>{
+                            embed.setColor("#FF5500")
+                            .setTitle('Tried using admin command but the player is not admin')
+                            channel.send(embed)
+                        })
+                    } else {
+                        this.discordClient.channels.fetch(Settings.discord.logChannel).then(channel=>{
+                            embed.setColor("#55FF00")
+                            .setTitle('Using admin command')
+                            channel.send(embed)
+                        })
+                    }
+                } else {
+                    this.discordClient.channels.fetch(Settings.discord.logChannel).then(channel=>{
+                        embed.setColor("#5500FF")
+                        .setTitle('Using command')
+                        channel.send(embed)
+                    })
+                }
+            } else {
+                if (Settings.discord.logChat){
+                    this.discordClient.channels.fetch(Settings.discord.logChannel).then(channel=>{
+                        embed.setColor("#5555FF")
+                        channel.send(embed)
+                    })
+                }
+            }
+        }
+
+        // Cross-chat function
+        if (this.settings.enableChatChannel){
+            if (!text.startsWith('/') && this.nextcontrol.status.getPlayer(login).name != "" && login != "00000000"){ // don't take commands & skip server messages
+                this.discordClient.channels.fetch(Settings.discord.chatChannel).then(channel=>{
+                    channel.send(`**${this.nextcontrol.status.getPlayer(login).name}**: ${text}`)
+                })
+            }
         }
     }
 

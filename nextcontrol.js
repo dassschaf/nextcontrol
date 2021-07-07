@@ -195,7 +195,10 @@ export class NextControl {
             let pool = await mariadb.createPool(Settings.mySql);
 
             // create actual connection
-            let conn = await pool.getConnection();
+            let conn = await pool.getConnection().catch(e => {
+                logger('er', JSON.stringify(e, null, 2));
+                process.exit(7);
+            });
 
             // set properties accordingly
             this.mysql = conn;

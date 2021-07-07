@@ -55,7 +55,26 @@ const Settings = {
     // List of administrators by their logins
     admins: [
         'your login here'
-    ]
+    ],
+
+    // If you're using Discord integration plugin, set your settings here
+    // If you don't want to use Discord, set "Discord Bot Integration" in the disabledPlugins array
+    discord: {
+        // Token of your Discord Bot, grab it at https://discord.com/developers
+        token: "super-secret-token",
+
+        // Logging channel ID, logs anything from the server so it's not meant for everyone.
+        // Leave an empty field ( "" ) if you don't want to enable logs
+        logChannel: "0123456789",
+
+        // Enables or disable chat logging to Discord, if enabled all messages sent in TM will be logged on the log Channel set above
+        logChat: true,
+
+        // Cross-chat channel ID, Allows to link together the server chat and the Discord chat.
+        // The messages received on Discord will be sent on TM and vice versa
+        // Leave an empty field ( "" ) if you don't want to enable cross-chat
+        chatChannel: "0123456789"
+    }
 
 }
 

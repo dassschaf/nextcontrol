@@ -8,6 +8,7 @@ import { AdminSuite } from './plugins/admin.js';
 import { ListsPlugin } from './plugins/list.js';
 import { JukeboxPlugin } from './plugins/jukebox.js';
 import { ForceModsPlugin } from "./plugins/forceMods.js";
+import { DiscordBot } from "./plugins/discord.js";
 
 // to add another plugin, uncomment and adjust this line:
 // import { PluginClass } from './path/to/file.js';
@@ -24,7 +25,8 @@ export function getPluginList(nextcontrol) {
         new AdminSuite(nextcontrol),
         new ListsPlugin(nextcontrol),
         new JukeboxPlugin(nextcontrol),
-        new ForceModsPlugin(nextcontrol)
+        new ForceModsPlugin(nextcontrol),
+        new DiscordBot(nextcontrol),
 
         // to add another plugin, add a plugin instance to this array:
         // new PluginClass(nextcontrol)

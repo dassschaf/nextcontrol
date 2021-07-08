@@ -9,6 +9,7 @@ import { ListsPlugin } from './plugins/list.js';
 import { JukeboxPlugin } from './plugins/jukebox.js';
 import { ForceModsPlugin } from "./plugins/forceMods.js";
 import { DiscordBot } from "./plugins/discord.js";
+import { HelpCommand } from "./plugins/help.js";
 
 // to add another plugin, uncomment and adjust this line:
 // import { PluginClass } from './path/to/file.js';
@@ -27,6 +28,7 @@ export function getPluginList(nextcontrol) {
         new JukeboxPlugin(nextcontrol),
         new ForceModsPlugin(nextcontrol),
         new DiscordBot(nextcontrol),
+        new HelpCommand(nextcontrol),
 
         // to add another plugin, add a plugin instance to this array:
         // new PluginClass(nextcontrol)

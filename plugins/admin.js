@@ -195,6 +195,9 @@ export class AdminSuite {
                 let setting = params.shift(),
                     value = params.shift().toString();
 
+                // add "S_" at the beginning of settings if there isn't one
+                if (!setting.startsWith('S_')) setting = "S_" + setting;
+
                 // adjust type of value
                 if (!isNaN(Number(value))) value = Number(value);
                 if (value.toLocaleLowerCase() === 'true' || value.toLocaleLowerCase() === 'false') value = Boolean(value);

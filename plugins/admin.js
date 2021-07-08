@@ -206,7 +206,10 @@ export class AdminSuite {
                 let struct = {};
                     struct[setting] = value;
 
-                await this.nextcontrol.client.query('SetModeScriptSettings', struct);
+                await this.nextcontrol.client.query('SetModeScriptSettings', struct).catch(async err=>{
+                    // Report error
+                    await this.nextcontrol.client.query('ChatSendServerMessageToLogin', [format(Sentences.errorMessage, {error: err.faultString}), login]);
+                });
 
             } else {
                 // not enough parameters

@@ -189,9 +189,7 @@ export class AdminSuite {
             await this.nextcontrol.modeSettings.readMatchSettings();
             await this.nextcontrol.client.query('ChatSendServerMessageToLogin', [Sentences.admin.settingsRead, login]);
 
-        } /* else if (operation === 'set') {
-            // currently broken, will fix later.
-
+        } else if (operation === 'set') {
             // set a mode setting to a value
             if (params.length === 2) {
                 let setting = params.shift(),
@@ -211,7 +209,7 @@ export class AdminSuite {
                 // not enough parameters
                 await this.nextcontrol.client.query('ChatSendServerMessageToLogin', [Sentences.admin.invalidParams, login]);
             }
-        } */
+        }
     }
 
     /**

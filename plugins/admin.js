@@ -199,8 +199,8 @@ export class AdminSuite {
                 if (!setting.startsWith('S_')) setting = "S_" + setting;
 
                 // adjust type of value
-                if (!isNaN(Number(value))) value = Number(value);
                 if (value.toLocaleLowerCase() === 'true' || value.toLocaleLowerCase() === 'false') value = Boolean(value);
+                else if (!isNaN(Number(value))) value = Number(value);
                 // else: keep string
 
                 let struct = {};

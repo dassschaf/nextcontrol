@@ -22,7 +22,7 @@ const Settings = {
         matchsettings_file: 'set.txt'
     },
 
-    usedDatabase: 'mongodb', // or mysql...
+    usedDatabase: 'mongodb', // or "mysql"...
 
     // you only need to enter the details about the database you actually are going to use.
 

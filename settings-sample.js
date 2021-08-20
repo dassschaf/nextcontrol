@@ -22,7 +22,7 @@ const Settings = {
         matchsettings_file: 'set.txt'
     },
 
-    usedDatabase: 'mongodb', // or "mysql"...
+    usedDatabase: 'mongodb', // or "mysql"; other values are not permitted and will cause problems.
 
     // you only need to enter the details about the database you actually are going to use.
 
@@ -53,6 +53,7 @@ const Settings = {
     disabledPlugins: ['Sample Plugin'],
 
     // List of administrators by their logins
+    // you can get your login conveniently from https://trackmania.io
     admins: [
         'your login here'
     ],

@@ -476,7 +476,7 @@ export class NextControl {
                         p.nbLaps,
                         p.nbCheckpoints,
                         p.type,
-                        p.style,
+                        p.style == undefined ? "" : p.style, // It's common that the style is undefined, so we need to check for that and add an empty string if it's undefined
                         p.tmxid,
                         p.uid
                     ]);

@@ -390,19 +390,19 @@ export class AdminSuite {
             await this.nextcontrol.mongoDb.collection('maps').insertOne(map);
         } else if (dbtype === 'mysql') {
             await this.nextcontrol.mysql.query('INSERT INTO maps VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)', [
-                p.uid,
-                p.name,
-                p.file,
-                p.author,
-                p.mood,
-                p.medals,
-                p.coppers,
-                p.isMultilap,
-                p.nbLaps,
-                p.nbCheckpoints,
-                p.type,
-                p.style,
-                p.tmxid
+                map.uid,
+                map.name,
+                map.file,
+                map.author,
+                map.mood,
+                map.medals,
+                map.coppers,
+                map.isMultilap,
+                map.nbLaps,
+                map.nbCheckpoints,
+                map.type,
+                map.style,
+                map.tmxid
             ]).catch(err => {
                 logger('er', err)
             });

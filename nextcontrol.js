@@ -398,15 +398,47 @@ export class NextControl {
                 let servMap = JSON.parse(JSON.stringify(p));
 
                 // check if map is in database already
-                if ((await this.mongoDb.collection('maps').countDocuments({uid : p.uid})) > 0)
-                    p = Classes.Map.fromDb(await this.mongoDb.collection('maps').findOne({uid : p.uid}));
+                if (dbtype === 'mongodb') {
+                    if ((await this.mongoDb.collection('maps').countDocuments({uid : p.uid})) > 0)
+                        p = Classes.Map.fromDb(await this.mongoDb.collection('maps').findOne({uid : p.uid}));
 
-                else { // map isn't in database yet:
-                    // find TMX id
-                    p.setTMXId(await TMX.getID(p.uid));
+                    else { // map isn't in database yet:
+                        // find TMX id
+                        p.setTMXId(await TMX.getID(p.uid));
 
-                    // update database entry
-                    await this.mongoDb.collection('maps').insertOne(p);
+                        // update database entry
+                        await this.mongoDb.collection('maps').insertOne(p);
+                    }
+                } else if (dbtype === 'mysql') {
+                    this.mysql.query('SELECT * FROM maps WHERE uid = ?', p.uid).then(async rows => {
+                        if (rows.length > 0) 
+                            p = Classes.Map.fromDb(rows[0]);
+                        else { // map isn't in database yet:
+                            // find TMX id
+                            p.setTMXId(await TMX.getID(p.uid));
+
+                            // update database entry
+                            this.mysql.query('INSERT INTO maps VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)', [
+                                p.uid,
+                                p.name,
+                                p.file,
+                                p.author,
+                                p.mood,
+                                p.medals,
+                                p.coppers,
+                                p.isMultilap,
+                                p.nbLaps,
+                                p.nbCheckpoints,
+                                p.type,
+                                p.style,
+                                p.tmxid
+                            ]).catch(err => {
+                                logger('er', err)
+                            });
+                        }
+                    }).catch(err => {
+                        logger('er', err)
+                    });
                 }
 
                 let hasChanged = false;
@@ -430,7 +462,25 @@ export class NextControl {
                 }
 
                 // update the map document in database, if we have just changed it
-                if (hasChanged) await this.mongoDb.collection('maps').updateOne({uid: p.uid}, {$set: p})
+                if (dbtype === 'mongodb') {
+                    if (hasChanged) await this.mongoDb.collection('maps').updateOne({uid: p.uid}, {$set: p})
+                } else if (dbtype === 'mysql') {
+                    if (hasChanged) this.mysql.query('UPDATE maps SET name=?,file=?,author=?,mood=?,medals=?,coppers=?,isMultilap=?,nbLaps=?,nbCheckpoints=?,type=?,style=?,tmxid=? WHERE uid = ?', [
+                        p.name,
+                        p.file,
+                        p.author,
+                        p.mood,
+                        p.medals,
+                        p.coppers,
+                        p.isMultilap,
+                        p.nbLaps,
+                        p.nbCheckpoints,
+                        p.type,
+                        p.style,
+                        p.tmxid,
+                        p.uid
+                    ]);
+                }
 
                 // update status:
                 this.status.map = p;

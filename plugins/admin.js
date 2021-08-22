@@ -2,6 +2,7 @@
 import { Sentences } from '../lib/sentences.js'
 import { logger, format, stripFormatting } from '../lib/utilities.js'
 import { Settings } from '../settings.js'
+let dbtype = Settings.usedDatabase.toLocaleLowerCase();
 
 import * as Classes from '../lib/classes.js'
 import { NextControl } from '../nextcontrol.js'
@@ -385,7 +386,27 @@ export class AdminSuite {
         await this.nextcontrol.client.query('InsertMap', [path]);
 
         // add map to the database
-        await this.nextcontrol.mongoDb.collection('maps').insertOne(map);
+        if (dbtype === 'mongodb') {
+            await this.nextcontrol.mongoDb.collection('maps').insertOne(map);
+        } else if (dbtype === 'mysql') {
+            await this.nextcontrol.mysql.query('INSERT INTO maps VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)', [
+                p.uid,
+                p.name,
+                p.file,
+                p.author,
+                p.mood,
+                p.medals,
+                p.coppers,
+                p.isMultilap,
+                p.nbLaps,
+                p.nbCheckpoints,
+                p.type,
+                p.style,
+                p.tmxid
+            ]).catch(err => {
+                logger('er', err)
+            });
+        }
     }
 
 }

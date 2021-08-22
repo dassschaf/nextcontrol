@@ -29,6 +29,8 @@ import { TMX } from './lib/tmx.js'
 import * as fs from "fs";
 
 
+const dbtype = Settings.usedDatabase.toLocaleLowerCase();
+
 /**
  * Main class containing the controller's brain
  */
@@ -173,8 +175,6 @@ export class NextControl {
 
         // woo, we're connected!
         await this.client.query('ChatSendServerMessage', ['$0f0~~ $fffStarting NextControl ...']);
-
-        let dbtype = Settings.usedDatabase.toLocaleLowerCase();
 
         if (dbtype === 'mongodb') {
             // create MongoDB client

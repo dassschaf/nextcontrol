@@ -3,6 +3,8 @@ import * as util from '../lib/utilities.js';
 import * as Classes from '../lib/classes.js';
 import { NextControl } from '../nextcontrol.js';
 import {stripFormatting} from "../lib/utilities.js";
+import { Settings } from '../settings.js'
+let dbtype = Settings.usedDatabase.toLocaleLowerCase();
 
 /**
  * Constants for communication about the used lists;
@@ -78,7 +80,12 @@ export class ListsPlugin {
             /**
              * @type {Array<Classes.Map>}
              */
-            let maps = await this.nextcontrol.mongoDb.collection('maps').find().toArray();
+            let maps
+            if (dbtype == 'mongodb') {
+                maps = await this.nextcontrol.mongoDb.collection('maps').find().toArray();
+            } else if (dbtype == 'mysql') {
+                maps = await this.nextcontrol.mysql.query('SELECT * FROM maps');
+            }
 
             // write maps array to the player's list:
             this.nextcontrol.lists.maps.set(login, maps);
@@ -90,7 +97,12 @@ export class ListsPlugin {
              * @type {Array<Classes.Map>}
              */
             let hits = [],
+                maps;
+            if (dbtype == 'mongodb') { 
                 maps = await this.nextcontrol.mongoDb.collection('maps').find().toArray();
+            } else if (dbtype == 'mysql') {
+                maps = await this.nextcontrol.mysql.query('SELECT * FROM maps');
+            }
 
             // make search regex
             let regex = new RegExp(params[0], 'gi');
@@ -117,7 +129,13 @@ export class ListsPlugin {
             this.nextcontrol.lists.players.set(login, players);
             return;
         } else if (params.length == 1 && ['db', 'database'].includes(params[0])) {
-            let players = await this.nextcontrol.mongoDb.collection('players').find().toArray();
+            let players;
+            
+            if (dbtype == 'mongodb') {
+                players = await this.nextcontrol.mongoDb.collection('players').find().toArray();
+            } else if (dbtype == 'mysql') {
+                players = await this.nextcontrol.mysql.query('SELECT * FROM players');
+            }
 
             this.nextcontrol.lists.players.set(login, players)
         }

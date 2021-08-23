@@ -2,6 +2,7 @@ import { Sentences } from '../lib/sentences.js'
 import { logger, format, stripFormatting } from '../lib/utilities.js'
 import { NextControl } from '../nextcontrol.js'
 import { Settings } from '../settings.js'
+let dbtype = Settings.usedDatabase.toLocaleLowerCase();
 import * as Classes from '../lib/classes.js'
 
 /**
@@ -35,7 +36,28 @@ export class Join {
      */
     async onPlayerConnect(player, isSpectator) {                    
         
-        await this.nextcontrol.mongoDb.collection('players').updateOne({login: player.login}, {$set: player}, {upsert: true});
+        if (dbtype === 'mongodb') {
+            await this.nextcontrol.mongoDb.collection('players').updateOne({login: player.login}, {$set: player}, {upsert: true});
+        } else if (dbtype === 'mysql') {
+            this.nextcontrol.mysql.query('SELECT * FROM players WHERE login = ?', [player.login]).then(rows=>{
+                if (rows.length === 0) {
+                    this.nextcontrol.mysql.query('INSERT INTO players (login, name) VALUES (?,?)', [player.login, player.name]).catch(err => {
+                        if (err) {
+                            logger('er', err);
+                        }
+                    });
+                } else {
+                    // If the player exists, update the name
+                    this.nextcontrol.mysql.query('UPDATE players SET name = ? WHERE login = ?', [player.name, player.login]).catch(err => {
+                        if (err) {
+                            logger('er', err);
+                        }
+                    });
+                }
+            }).catch(err=>{
+                logger('er', err);
+            });
+        }
 
         if (Settings.admins.includes(player.login)) {
             logger('r','Admin ' + stripFormatting(player.name) + ' has joined the server');

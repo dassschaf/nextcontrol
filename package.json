@@ -20,5 +20,8 @@
     "json-beautify": "^1.1.1",
     "mariadb": "^2.5.4",
     "mongodb": "^3.6.9"
+  },
+  "devDependencies": {
+    "@types/mongodb": "^4.0.7"
   }
 }

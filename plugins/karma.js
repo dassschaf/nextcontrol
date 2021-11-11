@@ -105,7 +105,13 @@ export class KarmaVote {
     }
 
     // Constructor
-    KarmaVote(_login, _map, _score) {
+    /**
+     * 
+     * @param {String} _login Player login
+     * @param {String} _map Map UID
+     * @param {Number} _score Score (0 to 10)
+     */
+    constructor(_login, _map, _score) {
         this.login = _login;
         this.map = _map;
         this.score = _score;

@@ -391,6 +391,26 @@ export class LocalRecord {
 }
 
 /**
+ * Class representing a local record, extended by a player's name
+ */
+ export class LocalRecordWithName extends LocalRecord {
+
+    /**
+     * Constructs the object
+     * @param {String} login 
+     * @param {Number} time 
+     * @param {String} map 
+     * @param {String} name 
+     */
+    constructor(login, time, map, name)
+
+    /**
+     * Player name
+     */
+    name : string
+}
+
+/**
  * Class representing the current server status
  */
 export class Status {

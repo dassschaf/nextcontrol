@@ -19,6 +19,6 @@
     "got": "^12.6.1",
     "json-beautify": "^1.1.1",
     "mariadb": "^2.5.6",
-    "mongodb": "^3.7.3"
+    "mongodb": "^3.7.4"
   }
 }

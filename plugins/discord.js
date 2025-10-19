@@ -7,6 +7,7 @@ import * as CallbackParams from '../lib/callbackparams.js'
 import * as Classes from '../lib/classes.js'
 import { NextControl } from '../nextcontrol.js'
 import * as Discord from 'discord.js'
+import {Logger} from "../lib/logger.js";
 
 /**
  * Discord bot integration
@@ -62,9 +63,9 @@ export class DiscordBot {
         this.discordClient = new Discord.Client()
         this.discordClient.login(Settings.discord.token).catch(err=>{
             if (err.code == "TOKEN_INVALID"){
-                logger('er', 'Discord: ' + err.message + " Double-check your token")
+                Logger.error('Discord: ' + err.message + " Double-check your token")
             } else {
-                logger('er', 'Discord: ' + err.message)
+                Logger.error('Discord: ' + err.message)
             }
             Settings.admins.forEach(adminLogin=>{
                 nextcontrol.client.query('ChatSendServerMessageToLogin', [Sentences.discord.prefix.error + err.message, adminLogin])

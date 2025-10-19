@@ -17,7 +17,9 @@ import mariadb from 'mariadb';
  */
 import * as CallbackParams from './lib/callbackparams.js';
 import * as Classes from './lib/classes.js';
-import { format, logger, stripFormatting } from './lib/utilities.js';
+import { format, stripFormatting } from './lib/utilities.js';
+import { Logger } from "./lib/logger.js";
+
 
 import { DatabaseLib } from "./lib/databaseLib.js";
 import { ServerLib } from "./lib/serverLib.js";
@@ -119,7 +121,7 @@ export class NextControl {
      * Prepares NextControl to be ready for use
      */
     async startup() {
-        logger('su', 'Starting NextControl...');
+        Logger.startup('Starting NextControl...');
 
         // create Trackmania XML-RPC client
         let client = gbxremote.createClient(Settings.trackmania.port);
@@ -127,33 +129,33 @@ export class NextControl {
         let serverPromise = new Promise((resolve, reject) => {
             // check for error
             client.on('error', () => {
-                logger('er', 'Could not connect to server. Check your settings!');
+                Logger.error('Could not connect to server. Check your settings!');
                 process.exit(1);
             })
 
             // upon connection
             client.on('connect', async () => {
                 // set API version
-                await client.query('SetApiVersion', ['2019-03-02']).catch(() => {
-                    logger('er', 'Setting API version failed.');
-                    process.exit(2);
-                });
+                // await client.query('SetApiVersion', ['2023-03-24']).catch(() => {
+                //     // Logger.error('Setting API version failed.');
+                //     // process.exit(2);
+                // });
 
                 // authenticate as SuperAdmin
                 await client.query('Authenticate', [Settings.trackmania.login, Settings.trackmania.password]).catch(() => {
-                    logger('er', 'Authentication failed -- check credentials!');
+                    Logger.error('Authentication failed -- check credentials!');
                     process.exit(3);
                 });
 
                 // enable callbacks
                 await client.query('EnableCallbacks', [true]).catch(() => {
-                    logger('er', 'Enabling callbacks failed.');
+                    Logger.error('Enabling callbacks failed.');
                     process.exit(4);
                 });
 
                 // enable script callbacks
                 await client.query('TriggerModeScriptEventArray', ['XmlRpc.EnableCallbacks', ['true']]).catch(() => {
-                    logger('er', 'Enabling script callbacks failed.');
+                    Logger.error('Enabling script callbacks failed.');
                     process.exit(5);
                 });
 
@@ -164,11 +166,11 @@ export class NextControl {
 
         // wait for promise
         await serverPromise.catch(e => {
-            logger('er', 'Connecting to the server has failed. Check port.');
+            Logger.error('Connecting to the server has failed. Check port.');
             process.exit(6);
         });
 
-        logger('su', 'Connected to Trackmania Server');
+        Logger.startup('Connected to Trackmania Server');
 
         // set properties accordingly
         this.client = client;
@@ -182,7 +184,7 @@ export class NextControl {
 
             // wait for database connection
             await database.connect().catch(e => {
-                logger('er', JSON.stringify(e, null, 2));
+                Logger.error(JSON.stringify(e, null, 2));
                 process.exit(7);
             });
 
@@ -196,7 +198,7 @@ export class NextControl {
 
             // create actual connection
             let conn = await pool.getConnection().catch(e => {
-                logger('er', JSON.stringify(e, null, 2));
+                Logger.error(JSON.stringify(e, null, 2));
                 process.exit(7);
             });
 
@@ -210,7 +212,7 @@ export class NextControl {
         this.dblib = new DatabaseLib(this);
 
         // woo, we're connected!
-        logger('su', 'Connected to Database Server');
+        Logger.startup('Connected to Database Server');
         await this.client.query('ChatSendServerMessage', ['$0f0~~ $fffConnected to database ...']);
 
         // set up necessary collections or tables
@@ -232,7 +234,7 @@ export class NextControl {
             if (idx < this.plugins.length - 1) 
                 pluginList += plugin.name + ', '; else pluginList += plugin.name 
         });
-        logger('su', 'Plugins loaded: ' + pluginList);
+        Logger.startup('Plugins loaded: ' + pluginList);
 
         // log commands
         let commandList = '';
@@ -240,7 +242,7 @@ export class NextControl {
             if (idx < this.chatCommands.length - 1)
                 commandList += command.commandName + ', '; else commandList += command.commandName
         })
-        logger('su', 'Chat commands registered: ' + commandList);
+        Logger.startup('Chat commands registered: ' + commandList);
 
         // log admin commands
         let adminCList = '';
@@ -248,12 +250,12 @@ export class NextControl {
             if (idx < this.adminCommands.length - 1)
                 adminCList += command.commandName + ', '; else adminCList += command.commandName
         })
-        logger('su', 'Admin commands registered: ' + adminCList);
+        Logger.startup('Admin commands registered: ' + adminCList);
 
 
         // now that we're done:
         this.isReady = true;
-        logger('i', 'Startup completed, starting to listen');
+        Logger.info('Startup completed, starting to listen');
         await this.client.query('ChatSendServerMessage', ['$0f0~~ $fffUp and running!']);
 
         this.startListening();
@@ -281,19 +283,19 @@ export class NextControl {
             let p;
 
             // we need to catch callbacks from the gamemode script beforehand, to properly get along with them
-            if (method === 'ManiaPlanet.ModeScriptCallbackArray') {
+            if (method === 'TrackMania.ModeScriptCallbackArray') {
                 method = para.shift();
                 p = JSON.parse(para[0][0]);
             }
 
-            //console.log(beautify({method: method, para: para}, null, 2));
+            // console.log({method: method, para: para}, null, 2);
 
             if (method === 'Trackmania.Event.WayPoint') {
                 p = new Classes.WaypointInfo(p);
 
                 this.plugins.forEach(plugin => { if (typeof plugin.onWaypoint != "undefined") plugin.onWaypoint(p); })
 
-            } else if (method === 'ManiaPlanet.PlayerConnect') {
+            } else if (method === 'TrackMania.PlayerConnect') {
                 let login = String(para[0]);
                 p = new Classes.PlayerInfo(await this.client.query('GetPlayerInfo', [login, 1]));
 
@@ -306,7 +308,7 @@ export class NextControl {
                 // start player connect handlers
                 this.plugins.forEach(plugin => { if (typeof plugin.onPlayerConnect != "undefined")  plugin.onPlayerConnect(p, isSpectator) });
 
-            } else if (method === 'ManiaPlanet.PlayerDisconnect') {
+            } else if (method === 'TrackMania.PlayerDisconnect') {
                 let player = this.status.getPlayer(String(para[0])), //<- playerInfo
                     reason = String(para[1]);
 
@@ -321,7 +323,7 @@ export class NextControl {
                 // remove player from status
                 this.status.removePlayer(player.login);
 
-            } else if (method === 'ManiaPlanet.PlayerChat') {
+            } else if (method === 'TrackMania.PlayerChat') {
                 let login = String(para[1]),
                     text = String(para[2]),
                     isCommand = Boolean(para[3]);
@@ -340,7 +342,7 @@ export class NextControl {
 
                         if (!Settings.admins.includes(login)) {
                             // player is not admin!
-                            logger('r', login + ' tried using command /admin ' + adminCommand + ', but is no admin!');
+                            Logger.info(login + ' tried using command /admin ' + adminCommand + ', but is no admin!');
                             this.client.query('ChatSendServerMessageToLogin', [Sentences.playerNotAdmin, login]);
                         }
 
@@ -356,13 +358,18 @@ export class NextControl {
                             adminParams = splitAdminCommand;
                         }
 
-                        logger('r', stripFormatting(player.name) + ' used admin command ' + adminCommand + ' with parameters: ' + adminParams);
+                        Logger.info(stripFormatting(player.name) + ' used admin command ' + adminCommand + ' with parameters: ' + adminParams);
 
                         this.adminCommands.forEach(commandDefinition => {
                             if (commandDefinition.commandName === adminCommand) {
                                 this.plugins.forEach(plugin => {
-                                    if (plugin.name == commandDefinition.pluginName)
-                                        plugin[commandDefinition.commandHandler.name](login, adminParams);
+                                    if (plugin.name == commandDefinition.pluginName) {
+                                        try {
+                                            plugin[commandDefinition.commandHandler.name](login, adminParams);
+                                        } catch (err) {
+                                            Logger.error("Error occured handling command: " + err);
+                                        }
+                                    }
                                 })
                             }
                         });
@@ -370,13 +377,17 @@ export class NextControl {
                     
                     else {
                         // handle regular command
-                        logger('r', stripFormatting(player.name) + ' used command /' + command + ' with parameters: ' + params);
+                        Logger.info(stripFormatting(player.name) + ' used command /' + command + ' with parameters: ' + params);
 
                         this.chatCommands.forEach(commandDefinition => {
                             if (commandDefinition.commandName === command) {
                                 this.plugins.forEach(plugin => {
                                     if (plugin.name == commandDefinition.pluginName) {
-                                        plugin[commandDefinition.commandHandler.name](login, splitCommand);
+                                        try {
+                                            plugin[commandDefinition.commandHandler.name](login, splitCommand);
+                                        } catch (err){
+                                            Logger.error("Error occured handling command: " + err);
+                                        }
                                     }
                                 })
                             }
@@ -387,7 +398,7 @@ export class NextControl {
                 // regular onChat function        
                 this.plugins.forEach(plugin => { if (typeof plugin.onChat != "undefined") plugin.onChat(login, text) });
 
-            } else if (method === 'ManiaPlanet.BeginMap') {
+            } else if (method === 'TrackMania.BeginMap') {
                 // parse map object
                 p = new Classes.Map(para[0]);
 
@@ -433,11 +444,11 @@ export class NextControl {
                                 p.style,
                                 p.tmxid
                             ]).catch(err => {
-                                logger('er', err)
+                                Logger.error(err)
                             });
                         }
                     }).catch(err => {
-                        logger('er', err)
+                        Logger.error(err)
                     });
                 }
 
@@ -487,19 +498,19 @@ export class NextControl {
 
                 this.plugins.forEach(plugin => { if (typeof plugin.onBeginMap != "undefined") plugin.onBeginMap(p) });
 
-            } else if (method === 'ManiaPlanet.BeginMatch') {
+            } else if (method === 'TrackMania.BeginMatch') {
                 // has no parameters
                 this.plugins.forEach(plugin => { if (typeof plugin.onBeginMatch != "undefined") plugin.onBeginMatch() });
 
-            } else if (method === 'ManiaPlanet.BillUpdated') {
+            } else if (method === 'TrackMania.BillUpdated') {
                 p = new CallbackParams.UpdatedBill(para);
                 this.plugins.forEach(plugin => { if (typeof plugin.onBillUpdate != "undefined") plugin.onBillUpdate(p) });
 
-            } else if (method === 'ManiaPlanet.EndMap') {
+            } else if (method === 'TrackMania.EndMap') {
                 p = new Classes.Map(para[0]);
                 this.plugins.forEach(plugin => { if (typeof plugin.onEndMap != "undefined") plugin.onEndMap(p) });
 
-            } else if (method === 'ManiaPlanet.EndMatch') {
+            } else if (method === 'TrackMania.EndMatch') {
                 p = new CallbackParams.MatchResults(para);
 
                 // reset mode settings to default
@@ -507,31 +518,31 @@ export class NextControl {
 
                 this.plugins.forEach(plugin => { if (typeof plugin.onEndMatch != "undefined") plugin.onEndMatch(p) });
 
-            } else if (method === 'ManiaPlanet.MapListModified') {
+            } else if (method === 'TrackMania.MapListModified') {
                 p = new CallbackParams.MaplistChange(para);
                 this.plugins.forEach(plugin => { if (typeof plugin.onMaplistChange != "undefined") plugin.onMaplistChange(p) });
 
-            } else if (method === 'ManiaPlanet.PlayerAlliesChanged') {
+            } else if (method === 'TrackMania.PlayerAlliesChanged') {
                 p = para[0]; // = player login
                 this.plugins.forEach(plugin => { if (typeof plugin.onPlayersAlliesChange != "undefined") plugin.onPlayersAlliesChange(p) });
 
-            } else if (method === 'ManiaPlanet.PlayerInfoChanged') {
+            } else if (method === 'TrackMania.PlayerInfoChanged') {
                 p = new Classes.PlayerInfo(para[0]);
                 this.plugins.forEach(plugin => { if (typeof plugin.onPlayerInfoChange != "undefined") plugin.onPlayerInfoChange(p) });
 
-            } else if (method === 'ManiaPlanet.PlayerManialinkPageAnswer') {
+            } else if (method === 'TrackMania.PlayerManialinkPageAnswer') {
                 p = new CallbackParams.ManialinkPageAnswer(para);
                 this.plugins.forEach(plugin => { if (typeof plugin.onManialinkPageAnswer != "undefined") plugin.onManialinkPageAnswer(p) });
 
-            } else if (method === 'ManiaPlanet.StatusChanged') {
+            } else if (method === 'TrackMania.StatusChanged') {
                 p = Classes.ServerStatus.fromCallback(para);
                 this.plugins.forEach(plugin => { if (typeof plugin.onStatusChange != "undefined") plugin.onStatusChange(p) });
 
-            } else if (method === 'ManiaPlanet.TunnelDataReceived') {
+            } else if (method === 'TrackMania.TunnelDataReceived') {
                 p = new CallbackParams.TunnelData(para);
                 this.plugins.forEach(plugin => { if (typeof plugin.onTunnelDataRecieved != "undefined") plugin.onTunnelDataRecieved(p) });
 
-            } else if (method === 'ManiaPlanet.VoteUpdated') {
+            } else if (method === 'TrackMania.VoteUpdated') {
                 p = Classes.CallVote.fromCallback(para);
                 this.plugins.forEach(plugin => { if (typeof plugin.onVoteUpdate != "undefined") plugin.onVoteUpdate(p) });
 
@@ -550,10 +561,10 @@ export class NextControl {
     registerChatCommand(comm) {
 
         // no custom admin command allowed
-        if (comm.name == 'admin') { logger('w', `A chat command from plugin ${comm.pluginName} attempted to register itself as /admin, fix the plugin or contact the plugin's developer.`); return; }            
+        if (comm.name == 'admin') { Logger.warning(`A chat command from plugin ${comm.pluginName} attempted to register itself as /admin, fix the plugin or contact the plugin's developer.`); return; }            
            
         // faulty command definition
-        if (comm.commandName == undefined || comm.commandHandler == undefined || comm.commandDescription == undefined || comm.commandName == '' || comm.commandDescription == '') { logger('w', `Chat command ${comm.toString()} from plugin ${comm.pluginName} has an invalid command definition lacking name, a handler function or a description, fix the plugin or contact the plugin's developer.`); return; }
+        if (comm.commandName == undefined || comm.commandHandler == undefined || comm.commandDescription == undefined || comm.commandName == '' || comm.commandDescription == '') { Logger.warning(`Chat command ${comm.toString()} from plugin ${comm.pluginName} has an invalid command definition lacking name, a handler function or a description, fix the plugin or contact the plugin's developer.`); return; }
 
         this.chatCommands.push(comm);
     }
@@ -565,7 +576,7 @@ export class NextControl {
     registerAdminCommand(comm) { 
 
         // faulty command definition
-        if (comm.commandName == undefined || comm.commandHandler == undefined || comm.commandDescription == undefined || comm.commandName == '' || comm.commandDescription == '') { logger('w', `Chat command ${comm.toString()} from plugin ${comm.pluginName} has an invalid command definition lacking name, a handler function or a description, fix the plugin or contact the plugin's developer.`); return; }
+        if (comm.commandName == undefined || comm.commandHandler == undefined || comm.commandDescription == undefined || comm.commandName == '' || comm.commandDescription == '') { Logger.warning(`Chat command ${comm.toString()} from plugin ${comm.pluginName} has an invalid command definition lacking name, a handler function or a description, fix the plugin or contact the plugin's developer.`); return; }
 
         this.adminCommands.push(comm);
         

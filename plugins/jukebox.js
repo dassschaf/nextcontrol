@@ -2,7 +2,8 @@ import { NextControl } from '../nextcontrol.js'
 import { MatchResults } from '../lib/callbackparams.js';
 import { Sentences } from '../lib/sentences.js';
 import * as Classes from '../lib/classes.js';
-import { logger, stripFormatting, format } from '../lib/utilities.js';
+import { stripFormatting, format } from '../lib/utilities.js';
+import { Logger } from '../lib/logger.js';
 
 export class JukeboxPlugin {
     name = 'Jukebox'
@@ -38,7 +39,7 @@ export class JukeboxPlugin {
             this.nextcontrol.jukebox.reset();
 
             await this.nextcontrol.client.query('ChatSendServerMessage', [format(Sentences.jukebox.cleared, {name: this.nextcontrol.status.getPlayer(login).name})]);
-            logger('r', `Jukebox: ${stripFormatting(this.nextcontrol.status.getPlayer(login).name)} has cleared the jukebox.`);
+            Logger.info(`Jukebox: ${stripFormatting(this.nextcontrol.status.getPlayer(login).name)} has cleared the jukebox.`);
         
             // if params[1] is a number:
         } else if (!isNaN(Number(params[0]))) {
@@ -87,12 +88,12 @@ export class JukeboxPlugin {
                 this.nextcontrol.jukebox.queueMap(map, player);
 
                 await this.nextcontrol.client.query('ChatSendServerMessage', [format(Sentences.jukebox.hasQueued, {name: this.nextcontrol.status.getPlayer(login).name, map: map.name})]);
-                logger('r', `Jukebox: ${stripFormatting(player.name)} has successfully jukeboxed map ${stripFormatting(map.name)}.`);
+                Logger.info(`Jukebox: ${stripFormatting(player.name)} has successfully jukeboxed map ${stripFormatting(map.name)}.`);
             } else {
                 this.nextcontrol.jukebox.priorityAdd(map, player);
 
                 await this.nextcontrol.client.query('ChatSendServerMessage', [format(Sentences.jukebox.priorityAdd, {name: this.nextcontrol.status.getPlayer(login).name, map: map.name})]);
-                logger('r', `Jukebox: ${stripFormatting(player.name)} has set next played map to ${stripFormatting(map.name)}.`);
+                Logger.info(`Jukebox: ${stripFormatting(player.name)} has set next played map to ${stripFormatting(map.name)}.`);
             }
 
         } else {
@@ -116,7 +117,7 @@ export class JukeboxPlugin {
             /*while (!this.nextcontrol.status.playerOnline(entry.player.login) && !abort) {
                 // skip jukebox submission:
                 await this.nextcontrol.client.query('ChatSendServerMessage', [format(Sentences.jukebox.leftSkipWish, {name: entry.player.name, map: entry.map.name})]);
-                logger('r', `Jukebox: Skipping queue entry for map ${stripFormatting(entry.map.name)} as requested by ${entry.player.name} because player left.`);
+                Logger.info(`Jukebox: Skipping queue entry for map ${stripFormatting(entry.map.name)} as requested by ${entry.player.name} because player left.`);
         
                 if (!this.nextcontrol.jukebox.isEmpty())
                     entry = this.nextcontrol.jukebox.unqueueMap();
@@ -129,7 +130,7 @@ export class JukeboxPlugin {
                 await this.nextcontrol.client.query('SetNextMapIdent', [entry.map.uid]);
                 await this.nextcontrol.client.query('ChatSendServerMessage', [format(Sentences.jukebox.nextMapIs, {name: entry.player.name, map: entry.map.name})]);
 
-                logger('r', `Jukebox: Set next map to ${stripFormatting(entry.map.name)} as requested by ${entry.player.name}`);
+                Logger.info(`Jukebox: Set next map to ${stripFormatting(entry.map.name)} as requested by ${entry.player.name}`);
             }
         }
     }

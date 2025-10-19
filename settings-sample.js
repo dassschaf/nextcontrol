@@ -18,7 +18,7 @@ const Settings = {
         // The login of the server at the master server, look it up on the player page in doubt
         server_login: 'blah',
 
-        // The matchsettings file the server is started with
+        // The path to the matchsettings file the server is started with (relative to the UserData directory)
         matchsettings_file: 'set.txt'
     },
 

@@ -3,6 +3,7 @@ import { Db } from "mongodb";
 import * as Classes from "./lib/classes";
 import {DatabaseLib} from "./lib/databaseLib";
 import {ServerLib} from "./lib/serverLib";
+// @ts-ignore
 import mariadb from 'mariadb';
 
 export class NextControl {

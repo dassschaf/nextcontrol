@@ -1,6 +1,6 @@
-
 import { Sentences } from '../lib/sentences.js'
-import { logger, format, stripFormatting } from '../lib/utilities.js'
+import { format, stripFormatting } from '../lib/utilities.js'
+import { Logger } from "../lib/logger.js";
 import { Settings } from '../settings.js'
 let dbtype = Settings.usedDatabase.toLocaleLowerCase();
 
@@ -117,7 +117,7 @@ export class AdminSuite {
         // else, just notify chat and console
         } else {
             await this.nextcontrol.client.query('ChatSendServerMessage', [format(Sentences.admin.extended, {name: this.nextcontrol.status.getPlayer(login).name, time: time})]);
-            logger('r', 'Successfully extended time by ' + time + ' seconds.')
+            Logger.info('Successfully extended time by ' + time + ' seconds.')
         }
     }
 
@@ -241,7 +241,7 @@ export class AdminSuite {
     async admin_shutdown(login, params) {
         // get title and player name
         await this.nextcontrol.client.query('ChatSendServerMessage', [`$z$s$ff0~~ $fffShutting down...`]);
-        logger('w', 'Shutting down NextControl upon /admin shutdown!')
+        Logger.warning('Shutting down NextControl upon /admin shutdown!')
 
         // shut down!
         process.exit(0);
@@ -294,9 +294,16 @@ export class AdminSuite {
 
             // get url right
             const url = TMX.site + '/maps/download/' + id;
-
+            let request;
             // download map
-            const request = await got(url, {headers: TMX.headers, encoding: 'binary'});
+            try {
+                request = await got(url, {headers: TMX.headers, encoding: 'binary'});
+            } catch (err) {
+                Logger.warning(err)
+                await this.nextcontrol.client.query('ChatSendServerMessageToLogin', [Sentences.admin.addTmxFailedInvalidID, player.login]);
+                return;
+            }
+
             const mapFile = request.rawBody;
 
             // write map to the TMX folder
@@ -306,14 +313,90 @@ export class AdminSuite {
             let map = new Classes.Map(await this.nextcontrol.client.query('GetMapInfo', [directory + filename]));
             map.setTMXId(id);
 
-            logger('r', 'Downloaded map ' + stripFormatting(map.name) + ' from TMX');
+            Logger.info('Downloaded map ' + stripFormatting(map.name) + ' from TMX');
 
             // add map to the map list
             await this.addmapToServer(directory + filename, map)
 
             // send info
             await this.nextcontrol.client.query('ChatSendServerMessage', [format(Sentences.admin.addedTmx, {name: player.name, map: map.name})]);
-            logger('r', `${stripFormatting(map.name)} was downloaded from TMX (ID: ${id}) and added to the map list.`);
+            Logger.info(`${stripFormatting(map.name)} was downloaded from TMX (ID: ${id}) and added to the map list.`);
+        }
+        if (source.toLocaleLowerCase() === 'pack') {
+            // check if the ID is valid
+            if (isNaN(Number(link)) || isNaN(parseFloat(link))) {
+                await this.nextcontrol.client.query('ChatSendServerMessageToLogin', [Sentences.admin.addTmxFailedInvalidID, player.login]);
+                return;
+            }
+
+            // save ID
+            let id = Number(link);
+
+            const mappackUrl = TMX.site + '/api/mappacks?fields=Name&id=' + id;
+            // Get mappack name
+            let mappackName;
+            try {
+                const mappackNameResponse = await got(mappackUrl, {headers: TMX.headers}).json();
+                mappackName = mappackNameResponse.Results[0].Name;
+            } catch (err) {
+                Logger.warning(err)
+                await this.nextcontrol.client.query('ChatSendServerMessageToLogin', [Sentences.admin.addTmxFailedInvalidID, player.login]);
+                return;
+            }
+            // make directory
+            let directory = this.nextcontrol.status.directories.maps + '/TMX/' + mappackName + '/';
+            if (!fs.existsSync(directory)) fs.mkdirSync(directory);
+
+            // Get list of maps in pack
+            const mapsUrl = TMX.site + '/api/maps?fields=MapId&mappackid=' + id;
+
+            let maps;
+            try {
+                maps = await got(mapsUrl, {headers: TMX.headers}).json();
+            } catch (err) {
+                Logger.warning(err)
+                await this.nextcontrol.client.query('ChatSendServerMessageToLogin', [Sentences.admin.addTmxFailedInvalidID, player.login]);
+                return;
+            }
+
+            maps.Results.reverse();
+
+            for (const Map of maps.Results) {
+                const MapId = Map.MapId;
+                let filename = MapId + '.Map.Gbx';
+                const url = TMX.site + '/maps/download/' + MapId;
+                let request;
+                // download map
+                try {
+                    request = await got(url, {headers: TMX.headers, encoding: 'binary'});
+                } catch (err) {
+                    Logger.warning(err)
+                    await this.nextcontrol.client.query('ChatSendServerMessageToLogin', [Sentences.admin.addTmxFailedInvalidID, player.login]);
+                    continue;
+                }
+
+                const mapFile = request.rawBody;
+
+                // write map to the TMX folder
+                fs.writeFileSync(directory + filename, mapFile);
+
+                // get map info
+                let map = new Classes.Map(await this.nextcontrol.client.query('GetMapInfo', [directory + filename]));
+                map.setTMXId(MapId);
+
+                Logger.info('Downloaded map ' + stripFormatting(map.name) + ' from TMX');
+
+                // add map to the map list
+                try {
+                    await this.addmapToServer(directory + filename, map)
+                } catch(err){
+                    Logger.warning(err)
+                    await this.nextcontrol.client.query('ChatSendServerMessageToLogin', [format(Sentences.admin.alreadyAdded, {map: map.name}), player.login]);
+                }
+            }
+
+            await this.nextcontrol.client.query('ChatSendServerMessage', [format(Sentences.admin.addedTmxPack, {name: player.name, mappack: mappackName})]);
+            Logger.info(`Pack ${stripFormatting(mappackName)} was downloaded from TMX (ID: ${id}) and added to the map list.`);
         }
 
         if (source.toLocaleLowerCase() === 'local') {
@@ -336,7 +419,7 @@ export class AdminSuite {
 
             // send info
             await this.nextcontrol.client.query('ChatSendServerMessage', [format(Sentences.admin.addedLocal, {name: player.name, map: map.name})]);
-            logger('r', `Local map ${stripFormatting(map.name)} (${link}) was added to the map list.`);
+            Logger.info(`Local map ${stripFormatting(map.name)} (${link}) was added to the map list.`);
         }
 
         if (source.toLocaleLowerCase() === 'url') {
@@ -370,7 +453,7 @@ export class AdminSuite {
                 name: player.name,
                 map: map.name
             })]);
-            logger('r', `${stripFormatting(map.name)} was downloaded from URL (${link}) and added to the map list.`);
+            Logger.info(`${stripFormatting(map.name)} was downloaded from URL (${link}) and added to the map list.`);
 
         }
     }
@@ -404,7 +487,7 @@ export class AdminSuite {
                 map.style,
                 map.tmxid
             ]).catch(err => {
-                logger('er', err)
+                Logger.error(err)
             });
         }
     }

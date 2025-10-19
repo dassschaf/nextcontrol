@@ -7,6 +7,7 @@ let dbtype = Settings.usedDatabase.toLocaleLowerCase();
 import * as CallbackParams from '../lib/callbackparams.js'
 import * as Classes from '../lib/classes.js'
 import { NextControl } from '../nextcontrol.js'
+import {Logger} from "../lib/logger.js";
 
 /**
  * Local Records plugin
@@ -210,7 +211,7 @@ export class LocalRecords {
 
                 await this.nextcontrol.client.query('ChatSendServerMessage', [msg]);
 
-                util.logger('r', `${util.stripFormatting(name)} claimed ${pos} local record (${timeString}) on ${util.stripFormatting(this.nextcontrol.status.map.name)}`);
+                Logger.info(`${util.stripFormatting(name)} claimed ${pos} local record (${timeString}) on ${util.stripFormatting(this.nextcontrol.status.map.name)}`);
                 
             } else {
                 let rec = new Classes.LocalRecord(login, timeOrScore, uid);
@@ -233,7 +234,7 @@ export class LocalRecords {
                     let msg = util.format(Sentences.localRecords.improved, {player: name, pos: pos, time: timeString, imp: improvement});
 
                     await this.nextcontrol.client.query('ChatSendServerMessage', [msg]);
-                    util.logger('r', `${util.stripFormatting(name)} improved to ${pos} local record (${timeString}) on ${util.stripFormatting(this.nextcontrol.status.map.name)}`);
+                    Logger.info(`${util.stripFormatting(name)} improved to ${pos} local record (${timeString}) on ${util.stripFormatting(this.nextcontrol.status.map.name)}`);
 
                 } else if (currentRecord.time == timeOrScore) {
                     let pos = util.nth((await this.nextcontrol.mongoDb.collection('records').countDocuments({map: uid, time: {$lt: rec.time}})) + 1),
@@ -242,7 +243,7 @@ export class LocalRecords {
                     let msg = util.format(Sentences.localRecords.equalled, {player: name, pos: pos, time: timeString});
 
                     await this.nextcontrol.client.query('ChatSendServerMessage', [msg]);
-                    util.logger('r', `${util.stripFormatting(name)} equalled their ${pos} local record (${timeString}) on ${util.stripFormatting(this.nextcontrol.status.map.name)}`);
+                    Logger.info(`${util.stripFormatting(name)} equalled their ${pos} local record (${timeString}) on ${util.stripFormatting(this.nextcontrol.status.map.name)}`);
 
                 } // else: currentRecord.time < timeOrScore, no improvement, ignore this
             } // else, ignore.
